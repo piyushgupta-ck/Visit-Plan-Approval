@@ -1,0 +1,2021 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Visit Plan Approval — CityKart</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ─── Base ─────────────────────────────────────────────────────────── */
+:root {
+  --brand:        #4F46E5;
+  --brand-dark:   #3730A3;
+  --brand-light:  #EEF2FF;
+  --brand-mid:    #6366F1;
+  --success:      #059669;
+  --success-bg:   #ECFDF5;
+  --danger:       #DC2626;
+  --danger-bg:    #FEF2F2;
+  --warning:      #D97706;
+  --warning-bg:   #FFFBEB;
+  --text-primary: #111827;
+  --text-secondary:#6B7280;
+  --text-muted:   #9CA3AF;
+  --border:       #E5E7EB;
+  --border-strong:#D1D5DB;
+  --surface:      #FFFFFF;
+  --bg:           #F9FAFB;
+  --bg-alt:       #F3F4F6;
+  --radius-sm:    6px;
+  --radius:       10px;
+  --radius-lg:    16px;
+  --shadow-sm:    0 1px 3px rgba(0,0,0,.08),0 1px 2px rgba(0,0,0,.05);
+  --shadow:       0 4px 16px rgba(0,0,0,.07),0 1px 4px rgba(0,0,0,.04);
+  --shadow-lg:    0 20px 48px rgba(0,0,0,.14),0 4px 16px rgba(0,0,0,.06);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{-webkit-font-smoothing:antialiased}
+body{
+  font-family:'Inter',system-ui,sans-serif;
+  font-size:14px;
+  background:var(--bg);
+  color:var(--text-primary);
+  min-height:100vh;
+  line-height:1.5;
+}
+a{color:var(--brand);text-decoration:none}
+a:hover{text-decoration:underline}
+
+/* ─── Scrollbar ──────────────────────────────────────────────────── */
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:#D1D5DB;border-radius:3px}
+
+/* ─── Login ──────────────────────────────────────────────────────── */
+#loginPage{
+  display:flex;align-items:center;justify-content:center;
+  min-height:100vh;padding:24px;
+  background:linear-gradient(135deg,#EEF2FF 0%,#F5F3FF 50%,#FDF4FF 100%);
+}
+.login-wrap{width:100%;max-width:400px}
+.login-logo-ring{
+  width:64px;height:64px;border-radius:18px;
+  background:linear-gradient(135deg,var(--brand),var(--brand-mid));
+  display:flex;align-items:center;justify-content:center;
+  font-size:28px;margin:0 auto 20px;
+  box-shadow:0 8px 24px rgba(79,70,229,.3);
+}
+.login-card{
+  background:var(--surface);border-radius:var(--radius-lg);
+  padding:36px 32px;box-shadow:var(--shadow-lg);
+  border:1px solid rgba(255,255,255,.8);
+}
+.login-heading{font-size:22px;font-weight:700;color:var(--text-primary);text-align:center;margin-bottom:4px}
+.login-sub{font-size:13px;color:var(--text-secondary);text-align:center;margin-bottom:28px}
+.login-label{display:block;font-size:12px;font-weight:600;color:var(--text-secondary);
+             text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+.login-input{
+  width:100%;padding:11px 14px;border:1.5px solid var(--border-strong);
+  border-radius:var(--radius);font-size:14px;font-family:inherit;
+  color:var(--text-primary);background:var(--bg);
+  transition:border-color .15s,box-shadow .15s;
+}
+.login-input:focus{outline:none;border-color:var(--brand);
+  box-shadow:0 0 0 3px rgba(79,70,229,.12);background:#fff}
+.login-input::placeholder{color:var(--text-muted)}
+.login-btn{
+  width:100%;margin-top:16px;padding:12px;
+  background:linear-gradient(135deg,var(--brand),var(--brand-mid));
+  color:#fff;border:none;border-radius:var(--radius);
+  font-size:14px;font-weight:600;font-family:inherit;
+  cursor:pointer;transition:all .2s;letter-spacing:.01em;
+}
+.login-btn:hover{transform:translateY(-1px);box-shadow:0 8px 20px rgba(79,70,229,.35)}
+.login-btn:disabled{opacity:.6;cursor:not-allowed;transform:none;box-shadow:none}
+.login-divider{display:flex;align-items:center;gap:10px;margin:20px 0}
+.login-divider hr{flex:1;border:none;border-top:1px solid var(--border)}
+.login-divider span{font-size:12px;color:var(--text-muted);white-space:nowrap}
+.login-hint-row{display:flex;gap:8px;padding:10px 12px;border-radius:var(--radius-sm);
+                background:var(--bg-alt);border:1px solid var(--border);margin-bottom:8px}
+.login-hint-row:last-child{margin-bottom:0}
+.hint-icon{font-size:16px;flex-shrink:0}
+.hint-text{font-size:12px;color:var(--text-secondary);line-height:1.5}
+.hint-text strong{color:var(--text-primary)}
+.login-err{
+  background:var(--danger-bg);color:var(--danger);padding:10px 12px;
+  border-radius:var(--radius-sm);font-size:13px;margin-bottom:14px;
+  border:1px solid #FECACA;display:none;align-items:center;gap:8px;
+}
+
+/* ─── App Shell ──────────────────────────────────────────────────── */
+#mainApp{display:none}
+.app-layout{display:flex;min-height:100vh}
+
+/* Sidebar */
+.sidebar{
+  width:240px;flex-shrink:0;
+  background:var(--surface);border-right:1px solid var(--border);
+  display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;
+  z-index:100;
+}
+.sidebar-brand{
+  padding:20px 20px 16px;
+  border-bottom:1px solid var(--border);
+}
+.brand-logo{
+  display:flex;align-items:center;gap:10px;
+}
+.brand-icon{
+  width:36px;height:36px;border-radius:10px;
+  background:linear-gradient(135deg,var(--brand),var(--brand-mid));
+  display:flex;align-items:center;justify-content:center;
+  font-size:16px;flex-shrink:0;
+}
+.brand-name{font-size:15px;font-weight:700;color:var(--text-primary)}
+.brand-tagline{font-size:11px;color:var(--text-muted);margin-top:1px}
+
+.sidebar-user{
+  margin:12px;padding:10px 12px;
+  background:var(--bg);border-radius:var(--radius);
+  border:1px solid var(--border);
+  display:flex;align-items:center;gap:10px;
+}
+.user-ava{
+  width:32px;height:32px;border-radius:50%;
+  background:linear-gradient(135deg,var(--brand),var(--brand-mid));
+  display:flex;align-items:center;justify-content:center;
+  color:#fff;font-weight:700;font-size:13px;flex-shrink:0;
+}
+.user-info{flex:1;min-width:0}
+.user-name{font-size:13px;font-weight:600;color:var(--text-primary);
+           white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.user-role{font-size:11px;color:var(--text-muted)}
+.admin-chip{
+  display:inline-block;background:linear-gradient(135deg,#F59E0B,#EF4444);
+  color:#fff;font-size:9px;font-weight:700;padding:1px 6px;
+  border-radius:4px;text-transform:uppercase;letter-spacing:.06em;margin-left:4px;
+}
+
+.sidebar-nav{flex:1;padding:8px;overflow-y:auto}
+.nav-section-label{
+  font-size:10px;font-weight:700;color:var(--text-muted);
+  text-transform:uppercase;letter-spacing:.08em;
+  padding:12px 8px 6px;
+}
+.nav-item{
+  display:flex;align-items:center;gap:10px;padding:9px 10px;
+  border-radius:var(--radius-sm);cursor:pointer;
+  font-size:13px;font-weight:500;color:var(--text-secondary);
+  transition:all .15s;margin-bottom:1px;border:none;
+  background:none;width:100%;text-align:left;font-family:inherit;
+}
+.nav-item:hover{background:var(--bg-alt);color:var(--text-primary)}
+.nav-item.active{background:var(--brand-light);color:var(--brand);font-weight:600}
+.nav-item.active .nav-icon{color:var(--brand)}
+.nav-icon{font-size:15px;width:20px;text-align:center;flex-shrink:0}
+.nav-badge{
+  margin-left:auto;background:var(--danger);color:#fff;
+  font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px;min-width:20px;
+  text-align:center;display:none;
+}
+.nav-badge.show{display:block}
+
+.sidebar-footer{
+  padding:12px;border-top:1px solid var(--border);
+}
+.sidebar-status{
+  display:flex;align-items:center;gap:7px;padding:8px 10px;
+  border-radius:var(--radius-sm);background:var(--bg);
+  border:1px solid var(--border);margin-bottom:8px;
+}
+.status-dot{width:7px;height:7px;border-radius:50%;background:#F59E0B;flex-shrink:0}
+.status-dot.online{background:#10B981}.status-dot.offline{background:#EF4444}
+.status-text{font-size:11px;color:var(--text-secondary)}
+.btn-logout{
+  width:100%;padding:8px;background:var(--bg);border:1px solid var(--border);
+  border-radius:var(--radius-sm);font-size:13px;font-weight:500;
+  color:var(--text-secondary);cursor:pointer;transition:all .15s;font-family:inherit;
+  display:flex;align-items:center;justify-content:center;gap:6px;
+}
+.btn-logout:hover{background:var(--danger-bg);border-color:#FECACA;color:var(--danger)}
+
+/* Main content */
+.main-content{
+  margin-left:240px;flex:1;display:flex;flex-direction:column;min-height:100vh;
+}
+.topbar{
+  background:var(--surface);border-bottom:1px solid var(--border);
+  padding:0 28px;height:56px;display:flex;align-items:center;
+  justify-content:space-between;position:sticky;top:0;z-index:50;
+}
+.topbar-title{font-size:16px;font-weight:600;color:var(--text-primary)}
+.topbar-sub{font-size:12px;color:var(--text-muted);margin-top:1px}
+.topbar-right{display:flex;align-items:center;gap:8px}
+.btn-icon{
+  width:34px;height:34px;border-radius:var(--radius-sm);
+  border:1px solid var(--border);background:var(--surface);
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;transition:all .15s;font-size:15px;color:var(--text-secondary);
+}
+.btn-icon:hover{background:var(--bg-alt);border-color:var(--border-strong);color:var(--text-primary)}
+.page-body{padding:24px 28px;flex:1}
+
+/* ─── Stats cards ────────────────────────────────────────────────── */
+.stats-grid{
+  display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px;
+}
+.stat-card{
+  background:var(--surface);border-radius:var(--radius);
+  padding:18px 20px;border:1px solid var(--border);
+  box-shadow:var(--shadow-sm);display:flex;align-items:center;gap:14px;
+}
+.stat-icon{
+  width:44px;height:44px;border-radius:var(--radius-sm);
+  display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;
+}
+.stat-icon.total {background:#EEF2FF}
+.stat-icon.approved{background:#ECFDF5}
+.stat-icon.rejected{background:#FEF2F2}
+.stat-icon.pending{background:#FFFBEB}
+.stat-body{}
+.stat-val{font-size:26px;font-weight:700;color:var(--text-primary);line-height:1}
+.stat-lbl{font-size:12px;color:var(--text-muted);margin-top:3px;font-weight:500}
+
+/* ─── Section header ──────────────────────────────────────────────── */
+.section-hd{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:16px;
+}
+.section-title{font-size:15px;font-weight:600;color:var(--text-primary)}
+.section-sub{font-size:12px;color:var(--text-muted);margin-top:1px}
+
+/* ─── Card ────────────────────────────────────────────────────────── */
+.card{
+  background:var(--surface);border-radius:var(--radius);
+  border:1px solid var(--border);box-shadow:var(--shadow-sm);
+  margin-bottom:20px;
+}
+.card-header{
+  padding:16px 20px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+}
+.card-title{font-size:14px;font-weight:600;color:var(--text-primary)}
+.card-body{padding:20px}
+.card-body.compact{padding:16px}
+.card-footer{
+  padding:12px 20px;border-top:1px solid var(--border);
+  background:var(--bg);border-radius:0 0 var(--radius) var(--radius);
+  display:flex;align-items:center;gap:8px;
+}
+
+/* ─── Info strip ─────────────────────────────────────────────────── */
+.info-strip{
+  display:flex;flex-wrap:wrap;gap:0;
+  border-radius:var(--radius-sm);overflow:hidden;border:1px solid var(--border);
+  margin-bottom:16px;
+}
+.info-item{
+  flex:1;min-width:140px;padding:10px 14px;
+  border-right:1px solid var(--border);
+}
+.info-item:last-child{border-right:none}
+.info-lbl{font-size:11px;color:var(--text-muted);font-weight:600;
+          text-transform:uppercase;letter-spacing:.05em;margin-bottom:2px}
+.info-val{font-size:13px;color:var(--text-primary);font-weight:500;
+          white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* ─── Form ────────────────────────────────────────────────────────── */
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.fg{margin-bottom:14px}
+.fg:last-child{margin-bottom:0}
+.fg label{
+  display:block;font-size:12px;font-weight:600;color:var(--text-secondary);
+  text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px;
+}
+.fg select,.fg input,.fg textarea{
+  width:100%;padding:9px 12px;
+  border:1.5px solid var(--border-strong);border-radius:var(--radius-sm);
+  font-size:13px;font-family:inherit;color:var(--text-primary);
+  background:var(--bg);transition:border-color .15s,box-shadow .15s;
+}
+.fg select:focus,.fg input:focus,.fg textarea:focus{
+  outline:none;border-color:var(--brand);
+  box-shadow:0 0 0 3px rgba(79,70,229,.1);background:#fff;
+}
+.fg select::placeholder,.fg input::placeholder,.fg textarea::placeholder{color:var(--text-muted)}
+.fg textarea{resize:vertical;min-height:80px;line-height:1.5}
+
+/* ─── Buttons ─────────────────────────────────────────────────────── */
+.btn{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:8px 16px;border-radius:var(--radius-sm);
+  font-size:13px;font-weight:600;font-family:inherit;
+  cursor:pointer;transition:all .15s;border:1.5px solid transparent;
+  line-height:1;
+}
+.btn-primary{
+  background:var(--brand);color:#fff;border-color:var(--brand);
+}
+.btn-primary:hover{background:var(--brand-dark);border-color:var(--brand-dark);
+  box-shadow:0 4px 12px rgba(79,70,229,.25)}
+.btn-primary:disabled{opacity:.55;cursor:not-allowed;box-shadow:none}
+.btn-success{background:var(--success);color:#fff;border-color:var(--success)}
+.btn-success:hover{background:#047857;box-shadow:0 4px 12px rgba(5,150,105,.25)}
+.btn-danger{background:var(--danger);color:#fff;border-color:var(--danger)}
+.btn-danger:hover{background:#B91C1C;box-shadow:0 4px 12px rgba(220,38,38,.25)}
+.btn-ghost{
+  background:transparent;color:var(--text-secondary);
+  border-color:var(--border-strong);
+}
+.btn-ghost:hover{background:var(--bg-alt);color:var(--text-primary)}
+.btn-sm{padding:6px 12px;font-size:12px}
+.btn-xs{padding:4px 9px;font-size:11px;border-radius:4px}
+.btn-block{width:100%;justify-content:center}
+
+/* ─── Table ───────────────────────────────────────────────────────── */
+.tbl-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13px}
+thead tr{background:var(--bg)}
+th{
+  padding:10px 14px;text-align:left;font-size:11px;font-weight:700;
+  color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;
+  border-bottom:1px solid var(--border);white-space:nowrap;
+}
+td{padding:12px 14px;border-bottom:1px solid var(--border);color:var(--text-primary)}
+tbody tr:last-child td{border-bottom:none}
+tbody tr:hover td{background:var(--bg)}
+
+/* ─── Badges ──────────────────────────────────────────────────────── */
+.badge{
+  display:inline-flex;align-items:center;gap:4px;
+  padding:3px 9px;border-radius:20px;font-size:11px;font-weight:600;
+}
+.badge-pending{background:#FEF3C7;color:#92400E;border:1px solid #FDE68A}
+.badge-approved{background:#D1FAE5;color:#065F46;border:1px solid #A7F3D0}
+.badge-rejected{background:#FEE2E2;color:#7F1D1D;border:1px solid #FECACA}
+.badge-info{background:var(--brand-light);color:var(--brand);border:1px solid #C7D2FE}
+.badge-email-ok{background:#D1FAE5;color:#065F46;border:1px solid #A7F3D0}
+.badge-email-err{background:#FEE2E2;color:#7F1D1D;border:1px solid #FECACA}
+
+/* ─── Request cards ───────────────────────────────────────────────── */
+.req-card{
+  border:1px solid var(--border);border-radius:var(--radius-sm);
+  padding:14px 16px;margin-bottom:10px;background:var(--surface);
+  transition:box-shadow .15s;
+}
+.req-card:hover{box-shadow:var(--shadow-sm)}
+.req-card:last-child{margin-bottom:0}
+.req-card-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px}
+.req-card-title{font-size:13px;font-weight:600;color:var(--text-primary)}
+.req-card-meta{font-size:12px;color:var(--text-secondary);margin-top:4px;line-height:1.5}
+.req-card-actions{display:flex;gap:6px;margin-top:10px}
+
+/* Pending card accent */
+.req-card.pending-card{border-left:3px solid #F59E0B}
+.req-card.approved-card{border-left:3px solid #10B981}
+.req-card.rejected-card{border-left:3px solid #EF4444}
+
+/* ─── Empty state ─────────────────────────────────────────────────── */
+.empty{
+  text-align:center;padding:36px 20px;
+}
+.empty-icon{font-size:36px;margin-bottom:10px;opacity:.4}
+.empty-text{font-size:13px;color:var(--text-muted)}
+
+/* ─── Alert toast ─────────────────────────────────────────────────── */
+.toast{
+  position:fixed;top:16px;right:16px;
+  max-width:360px;padding:12px 16px;
+  border-radius:var(--radius);font-size:13px;
+  box-shadow:var(--shadow-lg);z-index:9999;
+  display:flex;align-items:flex-start;gap:10px;
+  border:1px solid;animation:slideIn .25s ease;
+}
+@keyframes slideIn{from{transform:translateX(20px);opacity:0}to{transform:translateX(0);opacity:1}}
+.toast-success{background:#ECFDF5;border-color:#A7F3D0;color:#065F46}
+.toast-warning{background:#FFFBEB;border-color:#FDE68A;color:#92400E}
+.toast-danger{background:#FEF2F2;border-color:#FECACA;color:#7F1D1D}
+.toast-info{background:var(--brand-light);border-color:#C7D2FE;color:var(--brand-dark)}
+.toast-icon{font-size:16px;flex-shrink:0;margin-top:1px}
+.toast-body{flex:1}
+.toast-close{cursor:pointer;opacity:.5;font-size:16px;line-height:1;margin-left:4px}
+.toast-close:hover{opacity:1}
+
+/* ─── Modal ───────────────────────────────────────────────────────── */
+.modal-backdrop{
+  display:none;position:fixed;inset:0;
+  background:rgba(17,24,39,.5);backdrop-filter:blur(3px);
+  z-index:200;align-items:center;justify-content:center;padding:20px;
+}
+.modal-backdrop.open{display:flex}
+.modal-box{
+  background:var(--surface);border-radius:var(--radius-lg);
+  width:100%;max-width:500px;box-shadow:var(--shadow-lg);
+  border:1px solid var(--border);
+  animation:modalIn .2s ease;
+}
+@keyframes modalIn{from{transform:scale(.97);opacity:0}to{transform:scale(1);opacity:1}}
+.modal-hd{
+  padding:20px 24px 16px;display:flex;align-items:center;
+  justify-content:space-between;border-bottom:1px solid var(--border);
+}
+.modal-hd-title{font-size:16px;font-weight:700;color:var(--text-primary)}
+.modal-close-btn{
+  width:28px;height:28px;border-radius:6px;border:none;background:var(--bg-alt);
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  font-size:14px;color:var(--text-secondary);
+}
+.modal-close-btn:hover{background:var(--border);color:var(--text-primary)}
+.modal-body{padding:20px 24px}
+.modal-ft{
+  padding:14px 24px;border-top:1px solid var(--border);
+  display:flex;gap:8px;justify-content:flex-end;
+  background:var(--bg);border-radius:0 0 var(--radius-lg) var(--radius-lg);
+}
+.detail-grid{
+  background:var(--bg);border-radius:var(--radius-sm);
+  border:1px solid var(--border);overflow:hidden;margin-bottom:16px;
+}
+.detail-row{
+  display:grid;grid-template-columns:130px 1fr;
+  border-bottom:1px solid var(--border);
+}
+.detail-row:last-child{border-bottom:none}
+.detail-label{
+  padding:9px 12px;font-size:11px;font-weight:700;
+  color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em;
+  background:var(--bg-alt);border-right:1px solid var(--border);
+  display:flex;align-items:center;
+}
+.detail-value{padding:9px 14px;font-size:13px;color:var(--text-primary);display:flex;align-items:center}
+.detail-value.accent{font-weight:700;color:var(--brand)}
+
+/* ─── Accordion (email settings) ─────────────────────────────────── */
+.accordion-hd{
+  display:flex;align-items:center;gap:10px;cursor:pointer;
+  padding:14px 20px;user-select:none;
+}
+.accordion-hd:hover .accordion-toggle{color:var(--text-primary)}
+.accordion-toggle{font-size:11px;color:var(--text-muted);margin-left:auto;transition:transform .2s}
+.accordion-toggle.open{transform:rotate(180deg)}
+.accordion-body{padding:0 20px 20px;display:none}
+.accordion-body.open{display:block}
+.cfg-badge{
+  display:inline-flex;align-items:center;gap:4px;
+  padding:3px 8px;border-radius:10px;font-size:11px;font-weight:600;
+}
+.cfg-badge.ok{background:#D1FAE5;color:#065F46;border:1px solid #A7F3D0}
+.cfg-badge.no{background:#FEE2E2;color:#7F1D1D;border:1px solid #FECACA}
+.cfg-notice{
+  margin-top:12px;padding:10px 12px;background:#FFFBEB;
+  border:1px solid #FDE68A;border-radius:var(--radius-sm);
+  font-size:12px;color:#92400E;display:flex;gap:8px;
+}
+
+/* ─── File upload ─────────────────────────────────────────────────── */
+.upload-label{
+  display:flex;flex-direction:column;align-items:center;gap:8px;
+  border:2px dashed var(--border-strong);border-radius:var(--radius);
+  padding:20px 16px;cursor:pointer;transition:border-color .15s,background .15s;
+  text-align:center;font-size:13px;color:var(--text-secondary);
+}
+.upload-label:hover{border-color:var(--brand);background:var(--brand-light);color:var(--brand)}
+.upload-label.uploading{border-color:var(--brand);background:var(--brand-light);opacity:.7;pointer-events:none}
+.upload-label.success{border-color:var(--success);background:var(--success-bg)}
+.upload-label.error{border-color:var(--danger);background:var(--danger-bg)}
+.upload-icon{font-size:24px}
+
+/* ─── Page tabs ───────────────────────────────────────────────────── */
+.page-section{display:none}
+.page-section.active{display:block}
+
+/* ─── Spinner ─────────────────────────────────────────────────────── */
+.spin{
+  display:inline-block;width:13px;height:13px;
+  border:2px solid rgba(255,255,255,.4);border-radius:50%;
+  border-top-color:#fff;animation:spin .6s linear infinite;
+}
+.spin-dark{border-color:rgba(79,70,229,.2);border-top-color:var(--brand)}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ─── Schedule table highlight today ─────────────────────────────── */
+.today-row td{background:#EEF2FF!important;font-weight:600}
+.today-row td:first-child{border-left:3px solid var(--brand)}
+
+/* ─── Responsive ──────────────────────────────────────────────────── */
+@media(max-width:900px){
+  .sidebar{width:200px}
+  .main-content{margin-left:200px}
+  .stats-grid{grid-template-columns:repeat(2,1fr)}
+}
+@media(max-width:640px){
+  .sidebar{display:none}
+  .main-content{margin-left:0}
+  .stats-grid{grid-template-columns:1fr 1fr}
+  .form-row{grid-template-columns:1fr}
+  .page-body{padding:16px}
+}
+</style>
+</head>
+<body>
+
+<!-- ════════════════════════════════════════════
+     LOGIN
+════════════════════════════════════════════ -->
+<div id="loginPage">
+  <div class="login-wrap">
+    <div class="login-logo-ring">📋</div>
+    <div class="login-card">
+      <div class="login-heading">Welcome back</div>
+      <div class="login-sub">CityKart Visit Plan Approval System</div>
+
+      <div class="login-err" id="loginError">
+        <span>⚠️</span><span id="loginErrMsg"></span>
+      </div>
+
+      <label class="login-label" for="loginInput">Email address or admin</label>
+      <input class="login-input" type="text" id="loginInput"
+             placeholder="you@citykartstores.com"
+             onkeydown="if(event.key==='Enter') doLogin()">
+      <button class="login-btn" id="loginBtn" onclick="doLogin()">Sign in</button>
+
+      <div class="login-divider"><hr><span>Access guide</span><hr></div>
+      <div class="login-hint-row">
+        <span class="hint-icon">👤</span>
+        <span class="hint-text"><strong>Field staff:</strong> Enter your registered CityKart email address</span>
+      </div>
+      <div class="login-hint-row">
+        <span class="hint-icon">🔐</span>
+        <span class="hint-text"><strong>Administrator:</strong> Type <code style="background:var(--bg-alt);padding:1px 5px;border-radius:3px;font-size:11px">admin</code> to access the admin dashboard</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════
+     MAIN APP
+════════════════════════════════════════════ -->
+<div id="mainApp">
+  <div class="app-layout">
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-brand">
+        <div class="brand-logo">
+          <div class="brand-icon">📋</div>
+          <div>
+            <div class="brand-name">CityKart</div>
+            <div class="brand-tagline">Visit Plan Approval</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="sidebar-user">
+        <div class="user-ava" id="userAva">?</div>
+        <div class="user-info">
+          <div class="user-name" id="userNameSidebar">—</div>
+          <div class="user-role" id="userRoleSidebar">—</div>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <!-- Visitor nav -->
+        <div id="visitorNav" style="display:none">
+          <div class="nav-section-label">Menu</div>
+          <button class="nav-item active" onclick="showSection('mySchedule',this)">
+            <span class="nav-icon">📅</span> My Schedule
+          </button>
+          <button class="nav-item" onclick="showSection('myRequests',this)">
+            <span class="nav-icon">✏️</span> Change Request
+            <span class="nav-badge" id="pendingBadgeNav"></span>
+          </button>
+          <button class="nav-item" onclick="showSection('myHistory',this)">
+            <span class="nav-icon">📋</span> My History
+          </button>
+        </div>
+
+        <!-- Admin nav -->
+        <div id="adminNav" style="display:none">
+          <div class="nav-section-label">Dashboard</div>
+          <button class="nav-item active" onclick="showSection('adminPending',this)">
+            <span class="nav-icon">⏳</span> Pending Approvals
+            <span class="nav-badge" id="pendingBadgeAdmin"></span>
+          </button>
+          <button class="nav-item" onclick="showSection('adminSummary',this);loadSummary()">
+            <span class="nav-icon">📊</span> Summary
+          </button>
+          <button class="nav-item" onclick="showSection('adminSchedules',this)">
+            <span class="nav-icon">👥</span> All Schedules
+          </button>
+          <button class="nav-item" onclick="showSection('adminHistory',this)">
+            <span class="nav-icon">📋</span> Approvals History
+          </button>
+          <div class="nav-section-label">Settings</div>
+          <button class="nav-item" onclick="showSection('adminFiles',this);loadExcelStatus()">
+            <span class="nav-icon">📂</span> Data Files
+          </button>
+          <button class="nav-item" onclick="showSection('adminSettings',this)">
+            <span class="nav-icon">⚙️</span> Email Settings
+          </button>
+        </div>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="sidebar-status">
+          <div class="status-dot" id="statusDot"></div>
+          <span class="status-text" id="statusText">Connecting…</span>
+        </div>
+        <button class="btn-logout" onclick="doLogout()">
+          <span>↩</span> Sign out
+        </button>
+      </div>
+    </aside>
+
+    <!-- Main -->
+    <div class="main-content">
+      <header class="topbar">
+        <div>
+          <div class="topbar-title" id="topbarTitle">Dashboard</div>
+          <div class="topbar-sub" id="topbarSub">Loading…</div>
+        </div>
+        <div class="topbar-right">
+          <button class="btn-icon" title="Refresh data from Excel" onclick="refreshData()">🔄</button>
+        </div>
+      </header>
+
+      <div class="page-body">
+
+        <!-- Stats -->
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon total">📊</div>
+            <div class="stat-body">
+              <div class="stat-val" id="statTotal">0</div>
+              <div class="stat-lbl">Total Decisions</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon approved">✅</div>
+            <div class="stat-body">
+              <div class="stat-val" id="statApproved">0</div>
+              <div class="stat-lbl">Approved</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon rejected">❌</div>
+            <div class="stat-body">
+              <div class="stat-val" id="statRejected">0</div>
+              <div class="stat-lbl">Rejected</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon pending">⏳</div>
+            <div class="stat-body">
+              <div class="stat-val" id="statPending">0</div>
+              <div class="stat-lbl">Pending</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── VISITOR SECTIONS ────────────────────── -->
+
+        <!-- My Schedule -->
+        <div class="page-section active" id="sec-mySchedule">
+          <div class="section-hd">
+            <div>
+              <div class="section-title">My Visit Schedule</div>
+              <div class="section-sub">Your assigned store visits</div>
+            </div>
+            <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+              <select id="myYearFilter" onchange="onYearChange('my')" style="padding:7px 12px;border:1.5px solid var(--border-strong);border-radius:var(--radius-sm);font-size:13px;font-family:inherit;color:var(--text-primary);background:var(--surface)"></select>
+              <select id="myMonthFilter" onchange="renderVisitorSchedule()" style="padding:7px 12px;border:1.5px solid var(--border-strong);border-radius:var(--radius-sm);font-size:13px;font-family:inherit;color:var(--text-primary);background:var(--surface)"></select>
+              <button class="btn btn-ghost btn-sm" onclick="downloadMySchedule()">⬇ Download Excel</button>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">Profile</div>
+            </div>
+            <div class="info-strip" id="myInfoStrip">
+              <div class="info-item"><div class="info-lbl">Name</div><div class="info-val" id="myName">—</div></div>
+              <div class="info-item"><div class="info-lbl">Email</div><div class="info-val" id="myEmail">—</div></div>
+              <div class="info-item"><div class="info-lbl">Designation</div><div class="info-val" id="myDes">—</div></div>
+              <div class="info-item"><div class="info-lbl">Approver</div><div class="info-val" id="myApprover">—</div></div>
+            </div>
+            <div class="card-header" style="border-top:1px solid var(--border)">
+              <div class="card-title">Visit Plan — April 2026</div>
+              <span id="myPlanCount" class="badge badge-info">— days</span>
+            </div>
+            <div class="tbl-wrap">
+              <table>
+                <thead><tr><th>#</th><th>Date</th><th>Day</th><th>Store Code</th><th>Updated Store</th><th>Wooqer</th><th>Wooqer Adh%</th><th>Attend (Original)</th><th>Attend Adh% (Orig)</th><th>Attend (Updated)</th><th>Attend Adh% (Upd)</th></tr></thead>
+                <tbody id="myPlanBody"><tr><td colspan="11"><div class="empty"><div class="empty-icon">📅</div><div class="empty-text">Loading schedule…</div></div></td></tr></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Change Request -->
+        <div class="page-section" id="sec-myRequests">
+          <div class="section-hd">
+            <div>
+              <div class="section-title">Request a Change</div>
+              <div class="section-sub">Submit a visit plan change for approval</div>
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+            <div class="card">
+              <div class="card-header"><div class="card-title">New Change Request</div></div>
+              <div class="card-body">
+                <div class="fg">
+                  <label>Select Date</label>
+                  <select id="changeDate"><option value="">Choose a date…</option></select>
+                </div>
+                <div class="fg">
+                  <label>New Store / Visit Plan</label>
+                  <input type="text" id="newPlan" placeholder="e.g., DHI, APM, ANM">
+                </div>
+                <div class="fg">
+                  <label>Reason for Change</label>
+                  <textarea id="reason" placeholder="Briefly explain why the visit needs to change…"></textarea>
+                </div>
+              </div>
+              <div class="card-footer">
+                <button class="btn btn-primary" id="submitBtn" onclick="submitRequest()">Submit Request</button>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-header"><div class="card-title">My Requests</div></div>
+              <div class="card-body compact" id="myRequestsList">
+                <div class="empty"><div class="empty-icon">📭</div><div class="empty-text">No requests yet</div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- My History -->
+        <div class="page-section" id="sec-myHistory">
+          <div class="section-hd">
+            <div>
+              <div class="section-title">Approval History</div>
+              <div class="section-sub">All decisions made on your change requests</div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="tbl-wrap">
+              <table>
+                <thead><tr><th>Date</th><th>Original</th><th>Changed To</th><th>Status</th><th>Comment</th><th>Decided On</th></tr></thead>
+                <tbody id="myHistoryBody"><tr><td colspan="6"><div class="empty"><div class="empty-icon">📋</div><div class="empty-text">No decisions yet</div></div></td></tr></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── ADMIN SECTIONS ──────────────────────── -->
+
+        <!-- Pending Approvals -->
+        <div class="page-section" id="sec-adminPending">
+          <div class="section-hd">
+            <div>
+              <div class="section-title">Pending Approvals</div>
+              <div class="section-sub">Review and act on submitted change requests</div>
+            </div>
+          </div>
+          <div id="pendingList">
+            <div class="card"><div class="card-body"><div class="empty"><div class="empty-icon">✅</div><div class="empty-text">All clear — no pending approvals</div></div></div></div>
+          </div>
+        </div>
+
+        <!-- All Schedules -->
+        <!-- Admin Summary -->
+        <div class="page-section" id="sec-adminSummary">
+          <div class="section-hd">
+            <div>
+              <div class="section-title">Adherence Summary</div>
+              <div class="section-sub">Per-visitor metrics grouped by designation</div>
+            </div>
+            <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+              <select id="summaryYearFilter" onchange="onSummaryYearChange()" style="padding:7px 12px;border:1.5px solid var(--border-strong);border-radius:var(--radius-sm);font-size:13px;font-family:inherit;color:var(--text-primary);background:var(--surface)"></select>
+              <select id="summaryMonthFilter" onchange="loadSummary()" style="padding:7px 12px;border:1.5px solid var(--border-strong);border-radius:var(--radius-sm);font-size:13px;font-family:inherit;color:var(--text-primary);background:var(--surface)"></select>
+              <button class="btn btn-ghost btn-sm" onclick="downloadSummary()">⬇ Download Excel</button>
+            </div>
+          </div>
+          <div class="card">
+            <div class="tbl-wrap">
+              <table id="summaryTable">
+                <thead>
+                  <tr>
+                    <th>Designation</th>
+                    <th>Name</th>
+                    <th>Total Days</th>
+                    <th>Store Visit Days</th>
+                    <th>Plan Changed</th>
+                    <th>Plan Change %</th>
+                    <th>Wooqer Filled</th>
+                    <th>Wooqer Adh %</th>
+                    <th>Punch Present</th>
+                    <th>Attend Adh % (Orig)</th>
+                    <th>Attend Adh % (Upd)</th>
+                  </tr>
+                </thead>
+                <tbody id="summaryBody">
+                  <tr><td colspan="11"><div class="empty"><div class="empty-icon">📊</div><div class="empty-text">Click Summary to load</div></div></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div class="page-section" id="sec-adminSchedules">
+          <div class="section-hd">
+            <div>
+              <div class="section-title">All Visitor Schedules</div>
+              <div class="section-sub">Complete view of all team members' visit plans</div>
+            </div>
+            <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+              <select id="adminYearFilter" onchange="onYearChange('admin')" style="padding:7px 12px;border:1.5px solid var(--border-strong);border-radius:var(--radius-sm);font-size:13px;font-family:inherit;color:var(--text-primary);background:var(--surface)"></select>
+              <select id="adminMonthFilter" onchange="renderAdminSchedule()" style="padding:7px 12px;border:1.5px solid var(--border-strong);border-radius:var(--radius-sm);font-size:13px;font-family:inherit;color:var(--text-primary);background:var(--surface)"></select>
+              <select id="adminFilter" onchange="renderAdminSchedule()"
+                style="padding:7px 12px;border:1.5px solid var(--border-strong);border-radius:var(--radius-sm);
+                       font-size:13px;font-family:inherit;color:var(--text-primary);background:var(--surface)">
+                <option value="">All Visitors</option>
+              </select>
+              <button class="btn btn-ghost btn-sm" onclick="downloadAdminSchedule()">⬇ Download Excel</button>
+            </div>
+          </div>
+          <div class="card">
+            <div class="tbl-wrap">
+              <table>
+                <thead><tr><th>Visitor</th><th>Date</th><th>Day</th><th>Store Code</th><th>Updated Store</th><th>Wooqer</th><th>Wooqer Adh%</th><th>Attend (Original)</th><th>Attend Adh% (Orig)</th><th>Attend (Updated)</th><th>Attend Adh% (Upd)</th><th>Approver</th></tr></thead>
+                <tbody id="adminScheduleBody"><tr><td colspan="12"><div class="empty"><div class="empty-icon">👥</div><div class="empty-text">Loading…</div></div></td></tr></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Admin History -->
+        <div class="page-section" id="sec-adminHistory">
+          <div class="section-hd">
+            <div>
+              <div class="section-title">Approvals History</div>
+              <div class="section-sub">All change request decisions</div>
+            </div>
+            <div style="display:flex;gap:8px">
+              <button class="btn btn-ghost btn-sm" onclick="downloadReport()">⬇ Download Excel</button>
+              <button class="btn btn-ghost btn-sm" onclick="clearAll()" style="color:var(--danger);border-color:#FECACA">🗑 Clear All</button>
+            </div>
+          </div>
+          <div class="card">
+            <div class="tbl-wrap">
+              <table>
+                <thead><tr><th>Date</th><th>Visitor</th><th>Change</th><th>Status</th><th>Comment</th><th>Decided</th></tr></thead>
+                <tbody id="adminHistoryBody"><tr><td colspan="6"><div class="empty"><div class="empty-icon">📋</div><div class="empty-text">No decisions yet</div></div></td></tr></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Data Files -->
+        <div class="page-section" id="sec-adminFiles">
+          <div class="section-hd">
+            <div>
+              <div class="section-title">Data Files</div>
+              <div class="section-sub">Upload updated Excel files — changes take effect immediately</div>
+            </div>
+          </div>
+
+          <!-- File cards -->
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px">
+
+            <!-- CLP Plan -->
+            <div class="card">
+              <div class="card-header">
+                <div>
+                  <div class="card-title">📋 CLP Plan Approval</div>
+                  <div style="font-size:12px;color:var(--text-muted);margin-top:2px">Visit plan schedule for all RMs</div>
+                </div>
+                <span id="clp-badge" class="badge badge-info" style="font-size:11px">—</span>
+              </div>
+              <div class="card-body">
+                <div id="clp-meta" style="font-size:12px;color:var(--text-secondary);margin-bottom:12px">Loading…</div>
+                <label class="upload-label" id="clp-label" ondragover="event.preventDefault()" ondrop="handleDrop(event,'clp')">
+                  <input type="file" accept=".xlsx,.xls" onchange="uploadExcel('clp',this)" style="display:none">
+                  <span class="upload-icon">📤</span>
+                  <span>Click or drag &amp; drop .xlsx file</span>
+                </label>
+                <div id="clp-msg" style="margin-top:8px;font-size:12px"></div>
+              </div>
+            </div>
+
+            <!-- Wooqer -->
+            <div class="card">
+              <div class="card-header">
+                <div>
+                  <div class="card-title">✅ Wooqer Fill</div>
+                  <div style="font-size:12px;color:var(--text-muted);margin-top:2px">Wooqer store visit submissions</div>
+                </div>
+                <span id="wooqer-badge" class="badge badge-info" style="font-size:11px">—</span>
+              </div>
+              <div class="card-body">
+                <div id="wooqer-meta" style="font-size:12px;color:var(--text-secondary);margin-bottom:12px">Loading…</div>
+                <label class="upload-label" id="wooqer-label" ondragover="event.preventDefault()" ondrop="handleDrop(event,'wooqer')">
+                  <input type="file" accept=".xlsx,.xls" onchange="uploadExcel('wooqer',this)" style="display:none">
+                  <span class="upload-icon">📤</span>
+                  <span>Click or drag &amp; drop .xlsx file</span>
+                </label>
+                <div id="wooqer-msg" style="margin-top:8px;font-size:12px"></div>
+              </div>
+            </div>
+
+            <!-- Attendance -->
+            <div class="card">
+              <div class="card-header">
+                <div>
+                  <div class="card-title">🕐 Attendance</div>
+                  <div style="font-size:12px;color:var(--text-muted);margin-top:2px">Biometric punch records</div>
+                </div>
+                <span id="attendance-badge" class="badge badge-info" style="font-size:11px">—</span>
+              </div>
+              <div class="card-body">
+                <div id="attendance-meta" style="font-size:12px;color:var(--text-secondary);margin-bottom:12px">Loading…</div>
+                <label class="upload-label" id="attendance-label" ondragover="event.preventDefault()" ondrop="handleDrop(event,'attendance')">
+                  <input type="file" accept=".xlsx,.xls" onchange="uploadExcel('attendance',this)" style="display:none">
+                  <span class="upload-icon">📤</span>
+                  <span>Click or drag &amp; drop .xlsx file</span>
+                </label>
+                <div id="attendance-msg" style="margin-top:8px;font-size:12px"></div>
+              </div>
+            </div>
+
+          </div>
+
+          <div class="cfg-notice" style="margin-top:16px">
+            <span>💡</span>
+            <span>After uploading, click <strong>Refresh Data</strong> in the top bar to reload schedules and compliance data immediately.</span>
+          </div>
+        </div>
+
+        <!-- Email Settings -->
+        <div class="page-section" id="sec-adminSettings">
+          <div class="section-hd">
+            <div>
+              <div class="section-title">Email Settings</div>
+              <div class="section-sub">Configure Gmail SMTP for sending approval notifications</div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-body">
+              <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid var(--border)">
+                <div>
+                  <div style="font-size:14px;font-weight:600;color:var(--text-primary)">Gmail SMTP Configuration</div>
+                  <div style="font-size:12px;color:var(--text-muted);margin-top:2px">Approval emails are sent from this Gmail account</div>
+                </div>
+                <span class="cfg-badge no" id="emailCfgBadge">Not configured</span>
+              </div>
+              <p style="font-size:13px;color:var(--text-secondary);margin-bottom:16px;line-height:1.6">
+                Requires a Gmail <a href="https://myaccount.google.com/apppasswords" target="_blank">App Password</a>
+                (16 characters). First enable <strong>2-Step Verification</strong> on your Google account, then generate an app password at the link above.
+              </p>
+              <div class="form-row">
+                <div class="fg">
+                  <label>Gmail Address</label>
+                  <input type="text" id="cfgGmail" placeholder="yourname@gmail.com">
+                </div>
+                <div class="fg">
+                  <label>App Password</label>
+                  <input type="password" id="cfgPwd" placeholder="xxxx xxxx xxxx xxxx">
+                </div>
+              </div>
+              <div class="fg">
+                <label>Server Base URL <span style="text-transform:none;font-weight:400;color:var(--text-muted)">(used in email approve/reject links)</span></label>
+                <input type="text" id="cfgUrl" placeholder="http://192.168.1.10:5000">
+                <div id="serverIpHint" style="margin-top:6px;font-size:12px;color:var(--brand)"></div>
+              </div>
+              <div class="cfg-notice">
+                <span>⚠️</span>
+                <span>The Base URL must be your machine's <strong>network IP address</strong>, not localhost — so approvers on other devices can click the email links and reach your server.</span>
+              </div>
+              <div style="margin-top:16px;display:flex;gap:8px">
+                <button class="btn btn-primary" onclick="saveEmailCfg()">Save Configuration</button>
+                <button class="btn btn-ghost" onclick="testEmailCfg()">Send Test Email</button>
+              </div>
+              <div id="emailCfgMsg" style="margin-top:10px;font-size:13px"></div>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /page-body -->
+    </div><!-- /main-content -->
+  </div><!-- /app-layout -->
+</div><!-- /mainApp -->
+
+<!-- ── Approval Modal ── -->
+<div class="modal-backdrop" id="approvalModal">
+  <div class="modal-box">
+    <div class="modal-hd">
+      <div class="modal-hd-title">Review Change Request</div>
+      <button class="modal-close-btn" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="detail-grid" id="modalDetails"></div>
+      <div class="fg">
+        <label>Decision Comment <span style="text-transform:none;font-weight:400;color:var(--text-muted)">(required for rejection)</span></label>
+        <textarea id="modalComment" placeholder="Add your comment or reason…"></textarea>
+      </div>
+    </div>
+    <div class="modal-ft">
+      <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-danger" onclick="rejectFromModal()">Reject</button>
+      <button class="btn btn-success" onclick="approveFromModal()">Approve</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── State ─────────────────────────────────────────────────────────────
+let currentUser    = null;
+let visitorsData   = {};
+let changeRequests = [];
+let approvals      = [];
+let modalReqId     = null;
+const TODAY = new Date().toISOString().split('T')[0];
+
+// ── Boot ──────────────────────────────────────────────────────────────
+window.addEventListener('DOMContentLoaded', async () => {
+  const res = await fetch('/api/me').catch(() => null);
+  if (res && res.ok) {
+    const j = await res.json();
+    if (j.success) { currentUser = j.user; showApp(); return; }
+  }
+  showLogin();
+});
+
+// ── Navigation ────────────────────────────────────────────────────────
+function showSection(id, btn) {
+  document.querySelectorAll('.page-section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('sec-' + id).classList.add('active');
+  if (btn) btn.classList.add('active');
+  const titles = {
+    mySchedule:    ['My Schedule','Your assigned store visits for this month'],
+    myRequests:    ['Change Request','Submit or track a visit plan change'],
+    myHistory:     ['Approval History','Decisions on your change requests'],
+    adminPending:  ['Pending Approvals','Review and act on submitted requests'],
+    adminSchedules:['All Schedules','Complete team visit plan overview'],
+    adminHistory:  ['Approvals History','All change request decisions'],
+    adminSettings: ['Email Settings','Gmail SMTP configuration'],
+  };
+  const t = titles[id] || ['Dashboard',''];
+  document.getElementById('topbarTitle').textContent = t[0];
+  document.getElementById('topbarSub').textContent   = t[1];
+}
+
+// ── Auth ──────────────────────────────────────────────────────────────
+function showLogin() {
+  document.getElementById('loginPage').style.display = 'flex';
+  document.getElementById('mainApp').style.display   = 'none';
+  setTimeout(() => document.getElementById('loginInput').focus(), 100);
+}
+
+function showApp() {
+  document.getElementById('loginPage').style.display = 'none';
+  document.getElementById('mainApp').style.display   = 'block';
+
+  const initials = currentUser.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+  document.getElementById('userAva').textContent          = initials;
+  document.getElementById('userNameSidebar').textContent  = currentUser.name;
+  document.getElementById('userRoleSidebar').innerHTML    =
+    currentUser.isAdmin
+      ? 'Administrator <span class="admin-chip">ADMIN</span>'
+      : 'Cluster LP';
+
+  if (currentUser.isAdmin) {
+    document.getElementById('adminNav').style.display   = 'block';
+    document.getElementById('visitorNav').style.display = 'none';
+    showSection('adminPending', document.querySelector('#adminNav .nav-item'));
+    loadEmailCfg();
+  } else {
+    document.getElementById('visitorNav').style.display = 'block';
+    document.getElementById('adminNav').style.display   = 'none';
+    showSection('mySchedule', document.querySelector('#visitorNav .nav-item'));
+  }
+  refreshData();
+}
+
+async function doLogin() {
+  const val = document.getElementById('loginInput').value.trim();
+  const err = document.getElementById('loginError');
+  const btn = document.getElementById('loginBtn');
+  err.style.display = 'none';
+  if (!val) { showLoginErr('Please enter your email address or "admin"'); return; }
+  btn.disabled = true; btn.innerHTML = '<span class="spin"></span> Signing in…';
+  try {
+    const res  = await fetch('/api/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({identifier:val})});
+    const json = await res.json();
+    if (json.success) { currentUser = json.user; showApp(); }
+    else showLoginErr(json.error);
+  } catch(e) { showLoginErr('Cannot reach server. Make sure app.py is running on port 5000.'); }
+  finally { btn.disabled=false; btn.innerHTML='Sign in'; }
+}
+
+function showLoginErr(msg) {
+  document.getElementById('loginErrMsg').textContent = msg;
+  document.getElementById('loginError').style.display = 'flex';
+}
+
+async function doLogout() {
+  await fetch('/api/logout',{method:'POST'}).catch(()=>{});
+  currentUser=null; visitorsData={}; changeRequests=[]; approvals=[];
+  document.getElementById('loginInput').value='';
+  document.getElementById('loginError').style.display='none';
+  showLogin();
+}
+
+// ── Data ──────────────────────────────────────────────────────────────
+async function apiFetch(url, opts={}) {
+  const res = await fetch(url, opts);
+  if (res.status === 401) throw Object.assign(new Error('UNAUTHORIZED'),{code:'UNAUTHORIZED'});
+  return res;
+}
+
+async function refreshData() {
+  try {
+    await Promise.all([loadVisitors(), loadRequestsAndApprovals()]);
+    setStatus(true);
+  } catch(e) {
+    setStatus(false);
+    if (e.message==='UNAUTHORIZED') { doLogout(); return; }
+    showToast('danger','Server error: '+e.message);
+  }
+}
+
+async function loadVisitors() {
+  const res  = await apiFetch('/api/visitors');
+  const json = await res.json();
+  if (!json.success) throw new Error(json.error);
+  visitorsData = json.visitors;
+  populateYearMonthFilters();
+  if (currentUser.isAdmin) { populateAdminFilter(); renderAdminSchedule(); }
+  else renderVisitorSchedule();
+}
+
+async function loadRequestsAndApprovals() {
+  const [rr,ar] = await Promise.all([apiFetch('/api/requests'),apiFetch('/api/approvals')]);
+  changeRequests = (await rr.json()).requests||[];
+  approvals      = (await ar.json()).approvals||[];
+  updateStats();
+  if (currentUser.isAdmin) { renderPending(); renderAdminHistory(); }
+  else { renderMyRequests(); renderMyHistory(); }
+}
+
+// ── Visitor ───────────────────────────────────────────────────────────
+// ── Adherence score cell ──────────────────────────────────────────────
+function adhCell(score) {
+  if (score === null || score === undefined)
+    return `<span style="color:var(--text-muted);font-size:12px">N/A</span>`;
+  const color = score === 100 ? 'var(--success)' : 'var(--danger)';
+  const bg    = score === 100 ? 'var(--success-bg)' : 'var(--danger-bg)';
+  return `<span style="font-weight:700;color:${color};background:${bg};padding:3px 10px;border-radius:4px;font-size:12px">${score}</span>`;
+}
+
+function avgAdherence(plans, field) {
+  const scoreable = plans.filter(p => p[field] !== null && p[field] !== undefined);
+  if (!scoreable.length) return null;
+  const sum = scoreable.reduce((a, p) => a + p[field], 0);
+  return Math.round(sum / scoreable.length);
+}
+
+// ── Compliance badge helpers ──────────────────────────────────────────
+function complianceCell(w) {
+  if (!w) return '<span style="color:var(--text-muted);font-size:12px">—</span>';
+  if (w.status === 'match')
+    return `<span style="font-weight:600;color:var(--success);background:var(--success-bg);padding:3px 8px;border-radius:4px;font-size:12px" title="Submitted in Wooqer">✅ ${w.store}</span>`;
+  if (w.status === 'diff')
+    return `<span style="font-weight:600;color:var(--warning);background:var(--warning-bg);padding:3px 8px;border-radius:4px;font-size:12px" title="Different store submitted in Wooqer">⚠️ ${w.store}</span>`;
+  return `<span style="color:var(--text-muted);font-size:12px">❌ Not filled</span>`;
+}
+
+function attendanceCell(a) {
+  if (!a || a.status === 'missing')
+    return `<span style="color:var(--text-muted);font-size:12px">— No record</span>`;
+  if (a.status === 'match')
+    return `<span style="font-weight:600;color:var(--success);background:var(--success-bg);padding:3px 8px;border-radius:4px;font-size:12px">✅ ${a.store}</span>`;
+  if (a.status === 'diff')
+    return `<span style="font-weight:600;color:var(--warning);background:var(--warning-bg);padding:3px 8px;border-radius:4px;font-size:12px" title="Punched at different store">⚠️ ${a.store}</span>`;
+  if (a.status === 'absent')
+    return `<span style="font-weight:600;color:var(--danger);background:var(--danger-bg);padding:3px 8px;border-radius:4px;font-size:12px">❌ Absent</span>`;
+  return `<span style="color:var(--text-muted);font-size:12px">— No record</span>`;
+}
+
+function renderVisitorSchedule() {
+  const name = currentUser.visitor;
+  const v    = visitorsData[name];
+  if (!v) return;
+  document.getElementById('myName').textContent     = v.name;
+  document.getElementById('myEmail').textContent    = v.email;
+  document.getElementById('myDes').textContent      = v.designation;
+  document.getElementById('myApprover').textContent = v.approverEmail;
+  // Apply year+month filter
+  const selY = document.getElementById('myYearFilter');
+  const selM = document.getElementById('myMonthFilter');
+  const filterY = selY ? +selY.value : 0;
+  const filterM = selM ? +selM.value : 0;
+  const filtered = (filterY && filterM)
+    ? v.plans.filter(p => { const d=new Date(p.date); return d.getFullYear()===filterY && d.getMonth()+1===filterM; })
+    : v.plans;
+
+  document.getElementById('myPlanCount').textContent = filtered.length + ' days';
+
+  const body = document.getElementById('myPlanBody');
+  if (!filtered.length) { body.innerHTML='<tr><td colspan="11"><div class="empty"><div class="empty-icon">📅</div><div class="empty-text">No schedule for selected period</div></div></td></tr>'; return; }
+
+  const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  let html = filtered.map((p,i) => {
+    const d   = new Date(p.date);
+    const isT = p.date === TODAY;
+    const mm  = d.toLocaleDateString('en-IN',{month:'short',day:'2-digit'});
+    const updCell = p.updatedPlan
+      ? `<span style="font-weight:600;color:var(--success);background:var(--success-bg);padding:3px 10px;border-radius:4px;font-size:12px">${p.updatedPlan}</span>`
+      : `<span style="color:var(--text-muted);font-size:12px">—</span>`;
+    return `<tr class="${isT?'today-row':''}">
+      <td style="color:var(--text-muted);font-size:12px">${i+1}</td>
+      <td>${mm}${isT?' <span class="badge badge-info" style="font-size:10px;padding:1px 6px">Today</span>':''}</td>
+      <td style="color:var(--text-secondary)">${days[d.getDay()]}</td>
+      <td><span style="font-weight:600;color:var(--brand);background:var(--brand-light);padding:3px 10px;border-radius:4px;font-size:12px">${p.plan}</span></td>
+      <td>${updCell}</td>
+      <td>${complianceCell(p.wooqer)}</td>
+      <td>${adhCell(p.wooqer_adherence)}</td>
+      <td>${attendanceCell(p.attendance_original)}</td>
+      <td>${adhCell(p.attend_original_adherence)}</td>
+      <td>${attendanceCell(p.attendance_updated)}</td>
+      <td>${adhCell(p.attend_updated_adherence)}</td>
+    </tr>`;
+  }).join('');
+
+  // Summary footer row with averages
+  const avgW  = avgAdherence(filtered, 'wooqer_adherence');
+  const avgAO = avgAdherence(filtered, 'attend_original_adherence');
+  const avgAU = avgAdherence(filtered, 'attend_updated_adherence');
+  html += `<tr style="background:var(--bg-alt);font-weight:600;border-top:2px solid var(--border-strong)">
+    <td colspan="6" style="text-align:right;color:var(--text-secondary);font-size:12px;padding-right:12px">Average Adherence %</td>
+    <td>${adhCell(avgW)}</td>
+    <td></td>
+    <td>${adhCell(avgAO)}</td>
+    <td></td>
+    <td>${adhCell(avgAU)}</td>
+  </tr>`;
+  body.innerHTML = html;
+
+  // Date dropdown for change request
+  let opts = '<option value="">Choose a date…</option>';
+  v.plans.forEach(p => {
+    const d = new Date(p.date).toLocaleDateString('en-IN');
+    opts += `<option value="${p.date}">${d} — ${p.plan}</option>`;
+  });
+  document.getElementById('changeDate').innerHTML = opts;
+}
+
+function renderMyRequests() {
+  const el   = document.getElementById('myRequestsList');
+  const mine = changeRequests.filter(r => r.visitor===currentUser.visitor);
+  const pending = mine.filter(r=>r.status==='Pending').length;
+  const nb = document.getElementById('pendingBadgeNav');
+  nb.textContent = pending; nb.className = 'nav-badge'+(pending?' show':'');
+
+  if (!mine.length) { el.innerHTML='<div class="empty"><div class="empty-icon">📭</div><div class="empty-text">No requests submitted yet</div></div>'; return; }
+  el.innerHTML = mine.slice().reverse().map(r => {
+    const d   = new Date(r.date).toLocaleDateString('en-IN',{day:'2-digit',month:'short'});
+    const cls = {Approved:'approved',Rejected:'rejected',Pending:'pending'}[r.status]||'pending';
+    const em  = r.emailSent ? '<span class="badge badge-email-ok" style="font-size:10px">📧 Sent</span>'
+              : r.emailError ? '<span class="badge badge-email-err" style="font-size:10px">📧 Failed</span>' : '';
+    return `<div class="req-card ${cls}-card">
+      <div class="req-card-top">
+        <div>
+          <div class="req-card-title">${d} → <span style="color:var(--brand)">${r.newPlan}</span> ${em}</div>
+          <div class="req-card-meta">${r.reason}</div>
+        </div>
+        <span class="badge badge-${cls}">${r.status}</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderMyHistory() {
+  const body = document.getElementById('myHistoryBody');
+  if (!approvals.length) { body.innerHTML='<tr><td colspan="6"><div class="empty"><div class="empty-icon">📋</div><div class="empty-text">No decisions yet</div></div></td></tr>'; return; }
+  body.innerHTML = [...approvals].reverse().map(a => {
+    const d   = new Date(a.date).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});
+    const dec = new Date(a.approvedAt||a.rejectedAt).toLocaleDateString('en-IN',{day:'2-digit',month:'short'});
+    const cls = a.status==='Approved'?'approved':'rejected';
+    return `<tr>
+      <td>${d}</td>
+      <td><span style="color:var(--text-muted)">${a.originalPlan}</span></td>
+      <td><span style="font-weight:600;color:var(--brand)">${a.newPlan}</span></td>
+      <td><span class="badge badge-${cls}">${a.status}</span></td>
+      <td style="color:var(--text-secondary);font-size:12px">${a.comment||'—'}</td>
+      <td style="color:var(--text-muted);font-size:12px">${dec}</td>
+    </tr>`;
+  }).join('');
+}
+
+async function submitRequest() {
+  const date    = document.getElementById('changeDate').value;
+  const newPlan = document.getElementById('newPlan').value.trim();
+  const reason  = document.getElementById('reason').value.trim();
+  if (!date||!newPlan||!reason) { showToast('warning','Please fill in all fields'); return; }
+
+  const visitor = visitorsData[currentUser.visitor];
+  const btn     = document.getElementById('submitBtn');
+  btn.disabled  = true; btn.innerHTML='<span class="spin"></span> Submitting…';
+  try {
+    const res  = await apiFetch('/api/requests',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({visitor:currentUser.visitor,date,newPlan,reason,
+        visitorEmail:visitor.email,approverEmail:visitor.approverEmail})});
+    const json = await res.json();
+    if (!json.success) throw new Error(json.error);
+    changeRequests.push(json.request);
+    document.getElementById('changeDate').value='';
+    document.getElementById('newPlan').value='';
+    document.getElementById('reason').value='';
+    renderMyRequests(); updateStats();
+    showToast(json.emailSent?'success':'warning',
+      json.emailSent
+        ? `Request submitted. Approval email sent to ${visitor.approverEmail}`
+        : `Request saved but email failed: ${json.emailMsg}`);
+  } catch(e) { showToast('danger','Error: '+e.message); }
+  finally { btn.disabled=false; btn.innerHTML='Submit Request'; }
+}
+
+// ── Admin ─────────────────────────────────────────────────────────────
+const MONTH_NAMES = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+function populateYearMonthFilters() {
+  // Collect all unique year+month combos from ALL visitors' plans
+  const combos = new Set();
+  Object.values(visitorsData).forEach(v => {
+    v.plans.forEach(p => {
+      const d = new Date(p.date);
+      combos.add(`${d.getFullYear()}-${d.getMonth()+1}`);
+    });
+  });
+  const sorted = [...combos].sort();
+
+  // Unique years & months
+  const years  = [...new Set(sorted.map(c => c.split('-')[0]))].sort();
+  const now    = new Date();
+  const curY   = String(now.getFullYear());
+  const curM   = String(now.getMonth()+1);
+
+  // Fill both pairs of dropdowns identically
+  ['my','admin'].forEach(prefix => {
+    const ySel = document.getElementById(`${prefix}YearFilter`);
+    const mSel = document.getElementById(`${prefix}MonthFilter`);
+    if (!ySel || !mSel) return;
+
+    const prevY = ySel.value || curY;
+    const prevM = mSel.value || curM;
+
+    ySel.innerHTML = years.map(y =>
+      `<option value="${y}"${y===prevY?' selected':''}>${y}</option>`
+    ).join('');
+
+    // Months available for selected year
+    const selYear = ySel.value || curY;
+    const months  = [...new Set(
+      sorted.filter(c=>c.startsWith(selYear+'-')).map(c=>c.split('-')[1])
+    )].sort((a,b)=>+a-+b);
+
+    mSel.innerHTML = months.map(m =>
+      `<option value="${m}"${m===prevM?' selected':''}>${MONTH_NAMES[+m-1]}</option>`
+    ).join('');
+
+    // If previously selected month not available in new year, default to first
+    if (!months.includes(mSel.value)) mSel.value = months[0] || '';
+  });
+}
+
+// When year changes, refresh months then re-render
+function onYearChange(prefix) {
+  const ySel = document.getElementById(`${prefix}YearFilter`);
+  const mSel = document.getElementById(`${prefix}MonthFilter`);
+  const combos = new Set();
+  Object.values(visitorsData).forEach(v => v.plans.forEach(p => {
+    const d = new Date(p.date);
+    combos.add(`${d.getFullYear()}-${d.getMonth()+1}`);
+  }));
+  const selYear = ySel.value;
+  const months  = [...new Set(
+    [...combos].filter(c=>c.startsWith(selYear+'-')).map(c=>c.split('-')[1])
+  )].sort((a,b)=>+a-+b);
+  mSel.innerHTML = months.map(m =>
+    `<option value="${m}">${MONTH_NAMES[+m-1]}</option>`
+  ).join('');
+  if (prefix==='my') renderVisitorSchedule();
+  else renderAdminSchedule();
+}
+
+function populateAdminFilter() {
+  const sel = document.getElementById('adminFilter');
+  const cur = sel.value;
+  sel.innerHTML = '<option value="">All Visitors</option>';
+  Object.keys(visitorsData).sort().forEach(name => {
+    const o = document.createElement('option');
+    o.value=name; o.textContent=name;
+    if (name===cur) o.selected=true;
+    sel.appendChild(o);
+  });
+}
+
+function renderAdminSchedule() {
+  const filter  = document.getElementById('adminFilter').value;
+  const body    = document.getElementById('adminScheduleBody');
+  const names   = filter ? [filter] : Object.keys(visitorsData).sort();
+  const days    = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  const filterY = +document.getElementById('adminYearFilter').value  || 0;
+  const filterM = +document.getElementById('adminMonthFilter').value || 0;
+  if (!names.length) { body.innerHTML='<tr><td colspan="12"><div class="empty"><div class="empty-icon">👥</div><div class="empty-text">No data</div></div></td></tr>'; return; }
+  let rows = '';
+  let allPlans = [];   // collect all filtered plans for overall average footer
+  names.forEach(name => {
+    const v = visitorsData[name];
+    const plans = (filterY && filterM)
+      ? v.plans.filter(p => { const d=new Date(p.date); return d.getFullYear()===filterY && d.getMonth()+1===filterM; })
+      : v.plans;
+    allPlans = allPlans.concat(plans);
+    plans.forEach(p => {
+      const d   = new Date(p.date);
+      const mm  = d.toLocaleDateString('en-IN',{day:'2-digit',month:'short'});
+      const isT = p.date===TODAY;
+      const updCell = p.updatedPlan
+        ? `<span style="font-weight:600;color:var(--success);background:var(--success-bg);padding:3px 10px;border-radius:4px;font-size:12px">${p.updatedPlan}</span>`
+        : `<span style="color:var(--text-muted);font-size:12px">—</span>`;
+      rows += `<tr class="${isT?'today-row':''}">
+        <td style="font-weight:500">${name}</td>
+        <td>${mm}${isT?' <span class="badge badge-info" style="font-size:10px;padding:1px 6px">Today</span>':''}</td>
+        <td style="color:var(--text-secondary)">${days[d.getDay()]}</td>
+        <td><span style="font-weight:600;color:var(--brand);background:var(--brand-light);padding:3px 10px;border-radius:4px;font-size:12px">${p.plan}</span></td>
+        <td>${updCell}</td>
+        <td>${complianceCell(p.wooqer)}</td>
+        <td>${adhCell(p.wooqer_adherence)}</td>
+        <td>${attendanceCell(p.attendance_original)}</td>
+        <td>${adhCell(p.attend_original_adherence)}</td>
+        <td>${attendanceCell(p.attendance_updated)}</td>
+        <td>${adhCell(p.attend_updated_adherence)}</td>
+        <td style="color:var(--text-muted);font-size:12px">${v.approverEmail}</td>
+      </tr>`;
+    });
+  });
+
+  // Overall average footer
+  const avgW  = avgAdherence(allPlans, 'wooqer_adherence');
+  const avgAO = avgAdherence(allPlans, 'attend_original_adherence');
+  const avgAU = avgAdherence(allPlans, 'attend_updated_adherence');
+  rows += `<tr style="background:var(--bg-alt);font-weight:600;border-top:2px solid var(--border-strong)">
+    <td colspan="6" style="text-align:right;color:var(--text-secondary);font-size:12px;padding-right:12px">Overall Average Adherence %</td>
+    <td>${adhCell(avgW)}</td>
+    <td></td>
+    <td>${adhCell(avgAO)}</td>
+    <td></td>
+    <td>${adhCell(avgAU)}</td>
+    <td></td>
+  </tr>`;
+  body.innerHTML = rows;
+}
+
+function renderPending() {
+  const el      = document.getElementById('pendingList');
+  const pending = changeRequests.filter(r=>r.status==='Pending');
+  const nb      = document.getElementById('pendingBadgeAdmin');
+  nb.textContent=pending.length; nb.className='nav-badge'+(pending.length?' show':'');
+  document.getElementById('statPending').textContent = pending.length;
+
+  if (!pending.length) {
+    el.innerHTML='<div class="card"><div class="card-body"><div class="empty"><div class="empty-icon">✅</div><div class="empty-text">All clear — no pending approvals</div></div></div></div>';
+    return;
+  }
+  const days=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  el.innerHTML = pending.map(r => {
+    const d  = new Date(r.date);
+    const mm = d.toLocaleDateString('en-IN',{weekday:'short',day:'2-digit',month:'short',year:'numeric'});
+    const em = r.emailSent
+      ? '<span class="badge badge-email-ok" style="font-size:10px">📧 Email sent</span>'
+      : '<span class="badge badge-email-err" style="font-size:10px">📧 Email not sent</span>';
+    return `<div class="card" style="margin-bottom:12px">
+      <div class="card-header">
+        <div>
+          <div class="card-title">${r.visitor}</div>
+          <div style="font-size:12px;color:var(--text-muted);margin-top:2px">${r.visitorEmail}</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          ${em}
+          <span class="badge badge-pending">Pending</span>
+        </div>
+      </div>
+      <div class="info-strip" style="border-radius:0;border-left:none;border-right:none">
+        <div class="info-item"><div class="info-lbl">Visit Date</div><div class="info-val">${mm}</div></div>
+        <div class="info-item"><div class="info-lbl">New Plan</div><div class="info-val" style="color:var(--brand);font-weight:700">${r.newPlan}</div></div>
+        <div class="info-item" style="flex:2"><div class="info-lbl">Reason</div><div class="info-val">${r.reason}</div></div>
+        <div class="info-item"><div class="info-lbl">Approver</div><div class="info-val">${r.approverEmail}</div></div>
+      </div>
+      <div class="card-footer">
+        <button class="btn btn-success btn-sm" onclick="quickApprove('${r.id}')">✓ Approve</button>
+        <button class="btn btn-ghost btn-sm" onclick="openModal('${r.id}')">Review & Comment</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderAdminHistory() {
+  const body = document.getElementById('adminHistoryBody');
+  if (!approvals.length) { body.innerHTML='<tr><td colspan="6"><div class="empty"><div class="empty-icon">📋</div><div class="empty-text">No decisions recorded yet</div></div></td></tr>'; return; }
+  body.innerHTML = [...approvals].reverse().map(a => {
+    const d   = new Date(a.date).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});
+    const dec = new Date(a.approvedAt||a.rejectedAt).toLocaleDateString('en-IN',{day:'2-digit',month:'short'});
+    const cls = a.status==='Approved'?'approved':'rejected';
+    return `<tr>
+      <td>${d}</td>
+      <td style="font-weight:500">${a.visitor}</td>
+      <td><span style="color:var(--text-muted)">${a.originalPlan}</span> → <span style="font-weight:600;color:var(--brand)">${a.newPlan}</span></td>
+      <td><span class="badge badge-${cls}">${a.status}</span></td>
+      <td style="color:var(--text-secondary);font-size:12px;max-width:180px">${a.comment||'—'}</td>
+      <td style="color:var(--text-muted);font-size:12px">${dec}</td>
+    </tr>`;
+  }).join('');
+}
+
+async function quickApprove(id) {
+  try {
+    const res  = await apiFetch(`/api/requests/${id}/approve`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({comment:'Approved by admin'})});
+    const json = await res.json();
+    if (!json.success) throw new Error(json.error);
+    const r = changeRequests.find(x=>x.id===id); if(r) r.status='Approved';
+    approvals.push(json.approval);
+    updateStats(); renderPending(); renderAdminHistory();
+    showToast('success',`Approved: ${json.approval.visitor} — ${new Date(json.approval.date).toLocaleDateString('en-IN',{day:'2-digit',month:'short'})}`);
+  } catch(e) { showToast('danger',e.message); }
+}
+
+// ── Modal ─────────────────────────────────────────────────────────────
+function openModal(id) {
+  modalReqId = id;
+  const r = changeRequests.find(x=>x.id===id);
+  const d = new Date(r.date).toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  document.getElementById('modalDetails').innerHTML = `
+    <div class="detail-row"><div class="detail-label">Visitor</div><div class="detail-value">${r.visitor}</div></div>
+    <div class="detail-row"><div class="detail-label">Visit Date</div><div class="detail-value">${d}</div></div>
+    <div class="detail-row"><div class="detail-label">New Plan</div><div class="detail-value accent">${r.newPlan}</div></div>
+    <div class="detail-row"><div class="detail-label">Reason</div><div class="detail-value">${r.reason}</div></div>
+    <div class="detail-row"><div class="detail-label">From</div><div class="detail-value" style="font-size:12px;color:var(--text-muted)">${r.visitorEmail}</div></div>
+    <div class="detail-row"><div class="detail-label">Approver</div><div class="detail-value" style="font-size:12px;color:var(--text-muted)">${r.approverEmail}</div></div>`;
+  document.getElementById('modalComment').value='';
+  document.getElementById('approvalModal').classList.add('open');
+}
+function closeModal() { document.getElementById('approvalModal').classList.remove('open'); modalReqId=null; }
+
+async function approveFromModal() {
+  const comment = document.getElementById('modalComment').value.trim();
+  try {
+    const res  = await apiFetch(`/api/requests/${modalReqId}/approve`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({comment:comment||'Approved by admin'})});
+    const json = await res.json();
+    if (!json.success) throw new Error(json.error);
+    const r = changeRequests.find(x=>x.id===modalReqId); if(r) r.status='Approved';
+    approvals.push(json.approval);
+    closeModal(); updateStats(); renderPending(); renderAdminHistory();
+    showToast('success',`Approved: ${json.approval.visitor}`);
+  } catch(e) { showToast('danger',e.message); }
+}
+
+async function rejectFromModal() {
+  const comment = document.getElementById('modalComment').value.trim();
+  if (!comment) { showToast('warning','A comment is required for rejection'); return; }
+  try {
+    const res  = await apiFetch(`/api/requests/${modalReqId}/reject`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({comment})});
+    const json = await res.json();
+    if (!json.success) throw new Error(json.error);
+    const r = changeRequests.find(x=>x.id===modalReqId); if(r) r.status='Rejected';
+    approvals.push(json.rejection);
+    closeModal(); updateStats(); renderPending(); renderAdminHistory();
+    showToast('warning',`Rejected: ${json.rejection.visitor}`);
+  } catch(e) { showToast('danger',e.message); }
+}
+
+// ── Stats ─────────────────────────────────────────────────────────────
+function updateStats() {
+  document.getElementById('statTotal').textContent    = approvals.length;
+  document.getElementById('statApproved').textContent = approvals.filter(a=>a.status==='Approved').length;
+  document.getElementById('statRejected').textContent = approvals.filter(a=>a.status==='Rejected').length;
+  document.getElementById('statPending').textContent  = changeRequests.filter(r=>r.status==='Pending').length;
+}
+
+// ── Download Schedule (Visitor) ───────────────────────────────────────
+function downloadMySchedule() {
+  const name = currentUser.visitor;
+  const v    = visitorsData[name];
+  if (!v || !v.plans.length) { showToast('warning','No schedule data to download'); return; }
+  const filterY = +document.getElementById('myYearFilter').value  || 0;
+  const filterM = +document.getElementById('myMonthFilter').value || 0;
+  const plans = (filterY && filterM)
+    ? v.plans.filter(p => { const d=new Date(p.date); return d.getFullYear()===filterY && d.getMonth()+1===filterM; })
+    : v.plans;
+  if (!plans.length) { showToast('warning','No data for selected period'); return; }
+  const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  const label = (filterY && filterM) ? `${MONTH_NAMES[filterM-1]}${filterY}` : 'Full';
+  const rows = plans.map((p, i) => {
+    const d = new Date(p.date);
+    return {
+      '#':                       i + 1,
+      'Date':                    d.toLocaleDateString('en-IN', {day:'2-digit',month:'short',year:'numeric'}),
+      'Day':                     days[d.getDay()],
+      'Store Code':              p.plan,
+      'Updated Store':           p.updatedPlan || '',
+      'Wooqer Submitted':        p.wooqer             ? (p.wooqer.store             || 'Not filled') : '—',
+      'Wooqer Adherence%':       p.wooqer_adherence !== null && p.wooqer_adherence !== undefined ? p.wooqer_adherence : 'N/A',
+      'Attend Store (Original)': p.attendance_original ? (p.attendance_original.store || '—') : '—',
+      'Attend Adh% (Original)':  p.attend_original_adherence !== null && p.attend_original_adherence !== undefined ? p.attend_original_adherence : 'N/A',
+      'Attend Store (Updated)':  p.attendance_updated  ? (p.attendance_updated.store  || '—') : '—',
+      'Attend Adh% (Updated)':   p.attend_updated_adherence  !== null && p.attend_updated_adherence  !== undefined ? p.attend_updated_adherence  : 'N/A'
+    };
+  });
+  const ws = XLSX.utils.json_to_sheet(rows);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'My Schedule');
+  XLSX.writeFile(wb, `Schedule_${name.replace(/\s+/g,'_')}_${label}.xlsx`);
+}
+
+// ── Download Schedule (Admin) ─────────────────────────────────────────
+function downloadAdminSchedule() {
+  const filter  = document.getElementById('adminFilter').value;
+  const filterY = +document.getElementById('adminYearFilter').value  || 0;
+  const filterM = +document.getElementById('adminMonthFilter').value || 0;
+  const names   = filter ? [filter] : Object.keys(visitorsData).sort();
+  if (!names.length) { showToast('warning','No data to download'); return; }
+  const days  = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  const label = (filterY && filterM) ? `${MONTH_NAMES[filterM-1]}${filterY}` : 'Full';
+  let rows = [];
+  names.forEach(name => {
+    const v = visitorsData[name];
+    const plans = (filterY && filterM)
+      ? v.plans.filter(p => { const d=new Date(p.date); return d.getFullYear()===filterY && d.getMonth()+1===filterM; })
+      : v.plans;
+    plans.forEach(p => {
+      const d = new Date(p.date);
+      rows.push({
+        'Visitor':                 name,
+        'Designation':             v.designation,
+        'Date':                    d.toLocaleDateString('en-IN', {day:'2-digit',month:'short',year:'numeric'}),
+        'Day':                     days[d.getDay()],
+        'Store Code':              p.plan,
+        'Updated Store':           p.updatedPlan        || '',
+        'Wooqer Submitted':        p.wooqer             ? (p.wooqer.store             || 'Not filled') : '—',
+        'Wooqer Adherence%':       p.wooqer_adherence !== null && p.wooqer_adherence !== undefined ? p.wooqer_adherence : 'N/A',
+        'Attend Store (Original)': p.attendance_original ? (p.attendance_original.store || '—') : '—',
+        'Attend Adh% (Original)':  p.attend_original_adherence !== null && p.attend_original_adherence !== undefined ? p.attend_original_adherence : 'N/A',
+        'Attend Store (Updated)':  p.attendance_updated  ? (p.attendance_updated.store  || '—') : '—',
+        'Attend Adh% (Updated)':   p.attend_updated_adherence  !== null && p.attend_updated_adherence  !== undefined ? p.attend_updated_adherence  : 'N/A',
+        'Approver':                v.approverEmail
+      });
+    });
+  });
+  if (!rows.length) { showToast('warning','No data for selected period'); return; }
+  const ws = XLSX.utils.json_to_sheet(rows);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'All Schedules');
+  const nameLabel = filter ? filter.replace(/\s+/g,'_') : 'All';
+  XLSX.writeFile(wb, `Schedule_${nameLabel}_${label}.xlsx`);
+}
+
+// ── Summary ───────────────────────────────────────────────────────────
+let summaryData = [];
+
+function populateSummaryFilters() {
+  // Reuse year/month combos from visitorsData if loaded, else derive from current year
+  const combos = new Set();
+  Object.values(visitorsData).forEach(v => v.plans.forEach(p => {
+    const d = new Date(p.date);
+    combos.add(`${d.getFullYear()}-${d.getMonth()+1}`);
+  }));
+  const sorted = [...combos].sort();
+  const years  = [...new Set(sorted.map(c=>c.split('-')[0]))].sort();
+  const now    = new Date();
+  const curY   = String(now.getFullYear());
+  const curM   = String(now.getMonth()+1);
+
+  const ySel = document.getElementById('summaryYearFilter');
+  const mSel = document.getElementById('summaryMonthFilter');
+  ySel.innerHTML = years.map(y=>`<option value="${y}"${y===curY?' selected':''}>${y}</option>`).join('');
+
+  const selYear = ySel.value || curY;
+  const months  = [...new Set(sorted.filter(c=>c.startsWith(selYear+'-')).map(c=>c.split('-')[1]))].sort((a,b)=>+a-+b);
+  mSel.innerHTML = months.map(m=>`<option value="${m}"${m===curM?' selected':''}>${MONTH_NAMES[+m-1]}</option>`).join('');
+}
+
+function onSummaryYearChange() {
+  const ySel = document.getElementById('summaryYearFilter');
+  const mSel = document.getElementById('summaryMonthFilter');
+  const combos = new Set();
+  Object.values(visitorsData).forEach(v => v.plans.forEach(p => {
+    const d = new Date(p.date);
+    combos.add(`${d.getFullYear()}-${d.getMonth()+1}`);
+  }));
+  const months = [...new Set([...combos].filter(c=>c.startsWith(ySel.value+'-')).map(c=>c.split('-')[1]))].sort((a,b)=>+a-+b);
+  mSel.innerHTML = months.map(m=>`<option value="${m}">${MONTH_NAMES[+m-1]}</option>`).join('');
+  loadSummary();
+}
+
+async function loadSummary() {
+  populateSummaryFilters();
+  const year  = document.getElementById('summaryYearFilter').value;
+  const month = document.getElementById('summaryMonthFilter').value;
+  const body  = document.getElementById('summaryBody');
+  body.innerHTML = `<tr><td colspan="11"><div class="empty"><div class="empty-icon">⏳</div><div class="empty-text">Loading…</div></div></td></tr>`;
+  try {
+    const res  = await apiFetch(`/api/summary?year=${year}&month=${month}`);
+    const json = await res.json();
+    if (!json.success) { showToast('danger', json.error); return; }
+    summaryData = json.summary;
+    renderSummary();
+  } catch(e) { showToast('danger','Failed to load summary'); }
+}
+
+function pctCell(val) {
+  if (val === null || val === undefined) return `<span style="color:var(--text-muted);font-size:12px">—</span>`;
+  const color = val >= 80 ? 'var(--success)' : val >= 50 ? 'var(--warning)' : 'var(--danger)';
+  const bg    = val >= 80 ? 'var(--success-bg)' : val >= 50 ? 'var(--warning-bg)' : 'var(--danger-bg)';
+  return `<span style="font-weight:700;color:${color};background:${bg};padding:3px 10px;border-radius:4px;font-size:12px">${val}%</span>`;
+}
+
+function numCell(val) {
+  if (val === null || val === undefined) return `<span style="color:var(--text-muted)">—</span>`;
+  return `<span style="font-size:13px">${val}</span>`;
+}
+
+function renderSummary() {
+  const body = document.getElementById('summaryBody');
+  if (!summaryData.length) {
+    body.innerHTML = `<tr><td colspan="11"><div class="empty"><div class="empty-icon">📊</div><div class="empty-text">No data for selected period</div></div></td></tr>`;
+    return;
+  }
+
+  // Group by designation
+  const groups = {};
+  summaryData.forEach(r => {
+    if (!groups[r.designation]) groups[r.designation] = [];
+    groups[r.designation].push(r);
+  });
+
+  let html = '';
+  const DESIG_ORDER = ['REGIONAL_MANAGER','CLUSTER_MANAGER','CLUSTER_LP','CLUSTER_CVM'];
+  const orderedDesigs = [...new Set([...DESIG_ORDER, ...Object.keys(groups)])].filter(d=>groups[d]);
+
+  orderedDesigs.forEach(desig => {
+    const members = groups[desig];
+
+    // Designation header row
+    html += `<tr style="background:var(--brand-light)">
+      <td colspan="11" style="font-weight:700;color:var(--brand);font-size:12px;letter-spacing:.06em;padding:8px 14px">
+        ${desig} &nbsp;<span style="font-weight:400;color:var(--text-secondary)">(${members.length} members)</span>
+      </td>
+    </tr>`;
+
+    // Member rows
+    members.forEach(r => {
+      html += `<tr>
+        <td style="color:var(--text-muted);font-size:12px">${r.designation}</td>
+        <td style="font-weight:500">${r.name}</td>
+        <td style="text-align:center">${numCell(r.total_days)}</td>
+        <td style="text-align:center">${numCell(r.store_days)}</td>
+        <td style="text-align:center">${numCell(r.plan_changed)}</td>
+        <td style="text-align:center">${pctCell(r.plan_change_pct)}</td>
+        <td style="text-align:center">${numCell(r.wooqer_filled)}</td>
+        <td style="text-align:center">${pctCell(r.wooqer_adh_pct)}</td>
+        <td style="text-align:center">${numCell(r.att_present)}</td>
+        <td style="text-align:center">${pctCell(r.att_adh_orig_pct)}</td>
+        <td style="text-align:center">${pctCell(r.att_adh_upd_pct)}</td>
+      </tr>`;
+    });
+
+    // Designation subtotal row
+    const avg = field => {
+      const vals = members.map(r=>r[field]).filter(v=>v!==null&&v!==undefined);
+      return vals.length ? Math.round(vals.reduce((a,b)=>a+b,0)/vals.length) : null;
+    };
+    const sum = field => members.reduce((a,r)=>(a + (r[field]||0)), 0);
+    html += `<tr style="background:var(--bg-alt);border-top:1.5px solid var(--border-strong)">
+      <td colspan="2" style="font-weight:600;color:var(--text-secondary);font-size:12px;text-align:right;padding-right:14px">${desig} Average</td>
+      <td style="text-align:center;font-weight:600">${sum('total_days')}</td>
+      <td style="text-align:center;font-weight:600">${sum('store_days')}</td>
+      <td style="text-align:center;font-weight:600">${sum('plan_changed')}</td>
+      <td style="text-align:center">${pctCell(avg('plan_change_pct'))}</td>
+      <td style="text-align:center;font-weight:600">${sum('wooqer_filled')}</td>
+      <td style="text-align:center">${pctCell(avg('wooqer_adh_pct'))}</td>
+      <td style="text-align:center;font-weight:600">${sum('att_present')}</td>
+      <td style="text-align:center">${pctCell(avg('att_adh_orig_pct'))}</td>
+      <td style="text-align:center">${pctCell(avg('att_adh_upd_pct'))}</td>
+    </tr>`;
+  });
+
+  // Grand total row
+  const grandAvg = field => {
+    const vals = summaryData.map(r=>r[field]).filter(v=>v!==null&&v!==undefined);
+    return vals.length ? Math.round(vals.reduce((a,b)=>a+b,0)/vals.length) : null;
+  };
+  const grandSum = field => summaryData.reduce((a,r)=>(a+(r[field]||0)),0);
+  html += `<tr style="background:var(--brand-light);border-top:2px solid var(--brand)">
+    <td colspan="2" style="font-weight:700;color:var(--brand);text-align:right;padding-right:14px">Overall Total / Avg</td>
+    <td style="text-align:center;font-weight:700">${grandSum('total_days')}</td>
+    <td style="text-align:center;font-weight:700">${grandSum('store_days')}</td>
+    <td style="text-align:center;font-weight:700">${grandSum('plan_changed')}</td>
+    <td style="text-align:center">${pctCell(grandAvg('plan_change_pct'))}</td>
+    <td style="text-align:center;font-weight:700">${grandSum('wooqer_filled')}</td>
+    <td style="text-align:center">${pctCell(grandAvg('wooqer_adh_pct'))}</td>
+    <td style="text-align:center;font-weight:700">${grandSum('att_present')}</td>
+    <td style="text-align:center">${pctCell(grandAvg('att_adh_orig_pct'))}</td>
+    <td style="text-align:center">${pctCell(grandAvg('att_adh_upd_pct'))}</td>
+  </tr>`;
+
+  body.innerHTML = html;
+}
+
+function downloadSummary() {
+  if (!summaryData.length) { showToast('warning','No summary data to download'); return; }
+  const year  = document.getElementById('summaryYearFilter').value;
+  const month = document.getElementById('summaryMonthFilter').value;
+  const rows  = summaryData.map(r => ({
+    'Designation':          r.designation,
+    'Name':                 r.name,
+    'Total Days':           r.total_days,
+    'Store Visit Days':     r.store_days,
+    'Plan Changed':         r.plan_changed,
+    'Plan Change %':        r.plan_change_pct !== null ? r.plan_change_pct + '%' : '—',
+    'Wooqer Filled':        r.wooqer_filled,
+    'Wooqer Adherence %':   r.wooqer_adh_pct !== null ? r.wooqer_adh_pct + '%' : '—',
+    'Punch Present':        r.att_present,
+    'Attend Adh % (Orig)':  r.att_adh_orig_pct !== null ? r.att_adh_orig_pct + '%' : '—',
+    'Attend Adh % (Upd)':   r.att_adh_upd_pct !== null ? r.att_adh_upd_pct + '%' : '—',
+  }));
+  const ws = XLSX.utils.json_to_sheet(rows);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Summary');
+  XLSX.writeFile(wb, `Summary_${MONTH_NAMES[+month-1]}${year}.xlsx`);
+}
+
+// ── Download / Clear ──────────────────────────────────────────────────
+function downloadReport() {
+  if (!approvals.length) { showToast('warning','No approvals to download'); return; }
+  const rows = approvals.map(a=>({
+    'ID':a.id,'Visitor':a.visitor,
+    'Date':new Date(a.date).toLocaleDateString('en-IN'),
+    'Original Plan':a.originalPlan,'New Plan':a.newPlan,
+    'Status':a.status,'Comment':a.comment||'',
+    'Visitor Email':a.visitorEmail,'Approver Email':a.approverEmail,
+    'Decision Date':new Date(a.approvedAt||a.rejectedAt).toLocaleDateString('en-IN')
+  }));
+  const ws=XLSX.utils.json_to_sheet(rows);
+  const wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,ws,'Approvals');
+  XLSX.writeFile(wb,`Visit_Approvals_${new Date().toLocaleDateString('en-IN').replace(/\//g,'-')}.xlsx`);
+}
+
+async function clearAll() {
+  if (!confirm('Delete ALL change requests and approvals? This cannot be undone.')) return;
+  await apiFetch('/api/clear',{method:'POST'});
+  changeRequests=[]; approvals=[];
+  updateStats(); renderPending(); renderAdminHistory();
+  showToast('info','All data cleared');
+}
+
+// ── Email settings ────────────────────────────────────────────────────
+async function loadEmailCfg() {
+  try {
+    const [cfgRes,ipRes] = await Promise.all([apiFetch('/api/email-config'),fetch('/api/server-info')]);
+    const cfg = await cfgRes.json();
+    const ip  = await ipRes.json();
+    document.getElementById('cfgGmail').value = cfg.gmail||'';
+    const savedUrl = cfg.base_url||'';
+    const isLocal  = !savedUrl||savedUrl.includes('localhost')||savedUrl.includes('127.0.0.1');
+    document.getElementById('cfgUrl').value   = isLocal ? ip.url : savedUrl;
+    document.getElementById('serverIpHint').innerHTML =
+      `🌐 Detected server IP: <strong>${ip.url}</strong>`;
+    const badge = document.getElementById('emailCfgBadge');
+    if (cfg.configured) { badge.textContent='✅ Configured'; badge.className='cfg-badge ok'; }
+    else                { badge.textContent='Not configured'; badge.className='cfg-badge no'; }
+  } catch(e){}
+}
+
+async function saveEmailCfg() {
+  const gmail=document.getElementById('cfgGmail').value.trim();
+  const pwd  =document.getElementById('cfgPwd').value.trim();
+  const url  =document.getElementById('cfgUrl').value.trim();
+  const msg  =document.getElementById('emailCfgMsg');
+  if (!gmail||!pwd) { msg.innerHTML='<span style="color:var(--danger)">Gmail and App Password are required.</span>'; return; }
+  msg.innerHTML='<span style="color:var(--text-muted)">Saving…</span>';
+  const res  = await apiFetch('/api/email-config',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({gmail,app_password:pwd,base_url:url})});
+  const json = await res.json();
+  if (json.success) {
+    msg.innerHTML=`<span style="color:var(--success)">✅ Saved. Email links will use: <strong>${json.base_url||url}</strong></span>`;
+    document.getElementById('cfgPwd').value='';
+    loadEmailCfg();
+  } else {
+    msg.innerHTML=`<span style="color:var(--danger)">❌ ${json.error}</span>`;
+  }
+}
+
+async function testEmailCfg() {
+  const msg=document.getElementById('emailCfgMsg');
+  msg.innerHTML='<span style="color:var(--text-muted)"><span class="spin-dark spin"></span> Sending test email…</span>';
+  const res  = await apiFetch('/api/email-config/test',{method:'POST'});
+  const json = await res.json();
+  msg.innerHTML = json.success
+    ? '<span style="color:var(--success)">✅ Test email sent! Check your inbox.</span>'
+    : `<span style="color:var(--danger)">❌ ${json.message}</span>`;
+}
+
+// ── Helpers ───────────────────────────────────────────────────────────
+function setStatus(online) {
+  document.getElementById('statusDot').className  = 'status-dot '+(online?'online':'offline');
+  document.getElementById('statusText').textContent = online?'Server online':'Server offline';
+}
+
+function showToast(type, message) {
+  const icons={success:'✅',warning:'⚠️',danger:'❌',info:'ℹ️'};
+  const el=document.createElement('div');
+  el.className=`toast toast-${type}`;
+  el.innerHTML=`<span class="toast-icon">${icons[type]||'ℹ️'}</span>
+    <span class="toast-body">${message}</span>
+    <span class="toast-close" onclick="this.parentElement.remove()">✕</span>`;
+  document.body.appendChild(el);
+  setTimeout(()=>el.remove(),7000);
+}
+
+// ── Data Files (Excel upload) ─────────────────────────────────────────
+async function loadExcelStatus() {
+  try {
+    const res  = await apiFetch('/api/excel-status');
+    const json = await res.json();
+    if (!json.success) return;
+    ['clp','wooqer','attendance'].forEach(key => {
+      const info   = json[key];
+      const badge  = document.getElementById(`${key}-badge`);
+      const meta   = document.getElementById(`${key}-meta`);
+      if (info.exists) {
+        badge.textContent = '✅ Uploaded';
+        badge.className   = 'badge badge-info';
+        badge.style.background = 'var(--success-bg)';
+        badge.style.color      = 'var(--success)';
+        meta.innerHTML = `Last updated: <strong>${info.updated}</strong> &nbsp;·&nbsp; ${info.size_kb} KB`;
+      } else {
+        badge.textContent = '⚠️ Missing';
+        badge.className   = 'badge';
+        badge.style.background = 'var(--warning-bg)';
+        badge.style.color      = 'var(--warning)';
+        meta.textContent = 'No file uploaded yet';
+      }
+    });
+  } catch(e) {}
+}
+
+async function uploadExcel(fileType, input) {
+  const file = input.files[0];
+  if (!file) return;
+  const label = document.getElementById(`${fileType}-label`);
+  const msg   = document.getElementById(`${fileType}-msg`);
+  label.className = 'upload-label uploading';
+  label.querySelector('span:last-child').textContent = `Uploading ${file.name}…`;
+  msg.innerHTML = '';
+  const fd = new FormData();
+  fd.append('file_type', fileType);
+  fd.append('file', file);
+  try {
+    const res  = await fetch('/api/upload-excel', {method:'POST', body: fd});
+    const json = await res.json();
+    if (json.success) {
+      label.className = 'upload-label success';
+      label.querySelector('span:last-child').textContent = `✅ ${file.name} uploaded`;
+      msg.innerHTML = `<span style="color:var(--success)">${json.message}</span>`;
+      showToast('success', json.message);
+      loadExcelStatus();
+    } else {
+      label.className = 'upload-label error';
+      label.querySelector('span:last-child').textContent = 'Upload failed — try again';
+      msg.innerHTML = `<span style="color:var(--danger)">❌ ${json.error}</span>`;
+    }
+  } catch(e) {
+    label.className = 'upload-label error';
+    msg.innerHTML = `<span style="color:var(--danger)">❌ Network error</span>`;
+  }
+  // Reset input so same file can be re-uploaded
+  input.value = '';
+}
+
+function handleDrop(event, fileType) {
+  event.preventDefault();
+  const file = event.dataTransfer.files[0];
+  if (!file) return;
+  const fakeInput = {files:[file], value:''};
+  uploadExcel(fileType, fakeInput);
+}
+</script>
+</body>
+</html>

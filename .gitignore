@@ -1,0 +1,23 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.env
+venv/
+.venv/
+
+# Sensitive config — set these as Railway env vars instead
+email_config.json
+
+# Runtime data — will live on Railway volume
+data.json
+*.bak
+
+# Excel source files — uploaded via admin panel on Railway
+CLP Plan Approval.xlsx
+Wooqer Fill.xlsx
+Attendence.xlsx
+
+# OS
+.DS_Store
+Thumbs.db
