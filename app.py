@@ -9,10 +9,26 @@ from email.mime.text import MIMEText
 from datetime import datetime, date
 from functools import wraps
 
+from werkzeug.middleware.proxy_fix import ProxyFix
+
 app = Flask(__name__, static_folder='.')
 
-# Use a stable secret key from env (important for Railway — restarts would log everyone out otherwise)
+# Trust Railway's reverse proxy (fixes https:// detection and correct IPs)
+app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=1)
+
+# Use a stable secret key from env — MUST be set in Railway env vars
 app.secret_key = os.environ.get('SECRET_KEY', secrets.token_hex(32))
+
+# ── Session cookie config ────────────────────────────────────────────────────
+# Railway serves over HTTPS — cookies must be Secure + SameSite=Lax
+# otherwise the browser silently drops the session cookie after login.
+IS_PRODUCTION = os.environ.get('RAILWAY_ENVIRONMENT') is not None
+app.config.update(
+    SESSION_COOKIE_SECURE   = IS_PRODUCTION,   # HTTPS only on Railway, HTTP ok locally
+    SESSION_COOKIE_HTTPONLY = True,            # JS cannot read the cookie
+    SESSION_COOKIE_SAMESITE = 'Lax',           # sent on normal navigation
+    PERMANENT_SESSION_LIFETIME = 86400 * 7,    # 7 days
+)
 
 # ── Persistent data directory ────────────────────────────────────────────────
 # On Railway, use /data (mounted volume) if it exists, otherwise fall back to
@@ -303,6 +319,7 @@ def login():
 
     # ── Admin login ──────────────────────────────────────────────────────────
     if identifier.lower() == ADMIN_USERNAME:
+        session.permanent = True
         session['user'] = {
             'name':    'Administrator',
             'email':   'admin',
@@ -326,6 +343,7 @@ def login():
         return jsonify({'success': False,
                         'error':   'Email not found. Please use your registered CityKart email.'}), 404
 
+    session.permanent = True
     session['user'] = {
         'name':    matched['name'],
         'email':   matched['email'],
