@@ -1089,7 +1089,7 @@ function showApp() {
   document.getElementById('userRoleSidebar').innerHTML    =
     currentUser.isAdmin
       ? 'Administrator <span class="admin-chip">ADMIN</span>'
-      : 'Cluster LP';
+      : (visitorsData[currentUser.visitor]?.designation || '—');
 
   if (currentUser.isAdmin) {
     document.getElementById('adminNav').style.display   = 'block';
@@ -1217,6 +1217,9 @@ function renderVisitorSchedule() {
   document.getElementById('myEmail').textContent    = v.email;
   document.getElementById('myDes').textContent      = v.designation;
   document.getElementById('myApprover').textContent = v.approverEmail;
+  // Keep sidebar designation in sync with actual data
+  if (!currentUser.isAdmin)
+    document.getElementById('userRoleSidebar').textContent = v.designation || '—';
   // Apply year+month filter
   const selY = document.getElementById('myYearFilter');
   const selM = document.getElementById('myMonthFilter');
