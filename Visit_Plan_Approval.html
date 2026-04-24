@@ -595,6 +595,18 @@ tbody tr:hover td{background:var(--bg)}
           </button>
         </div>
 
+        <!-- Approver nav -->
+        <div id="approverNav" style="display:none">
+          <div class="nav-section-label">Approvals</div>
+          <button class="nav-item active" onclick="showSection('approverPending',this)">
+            <span class="nav-icon">⏳</span> Pending Requests
+            <span class="nav-badge" id="pendingBadgeApprover"></span>
+          </button>
+          <button class="nav-item" onclick="showSection('approverHistory',this)">
+            <span class="nav-icon">📋</span> Decision History
+          </button>
+        </div>
+
         <!-- Admin nav -->
         <div id="adminNav" style="display:none">
           <div class="nav-section-label">Dashboard</div>
@@ -776,6 +788,41 @@ tbody tr:hover td{background:var(--bg)}
         <!-- ── ADMIN SECTIONS ──────────────────────── -->
 
         <!-- Pending Approvals -->
+        <!-- ── APPROVER SECTIONS ──────────────────────────────────── -->
+
+        <!-- Approver Pending -->
+        <div class="page-section" id="sec-approverPending">
+          <div class="section-hd">
+            <div>
+              <div class="section-title">Pending Requests</div>
+              <div class="section-sub">Change requests waiting for your decision</div>
+            </div>
+          </div>
+          <div id="approverPendingList">
+            <div class="card"><div class="card-body"><div class="empty"><div class="empty-icon">⏳</div><div class="empty-text">Loading…</div></div></div></div>
+          </div>
+        </div>
+
+        <!-- Approver History -->
+        <div class="page-section" id="sec-approverHistory">
+          <div class="section-hd">
+            <div>
+              <div class="section-title">Decision History</div>
+              <div class="section-sub">All requests you have approved or rejected</div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="tbl-wrap">
+              <table>
+                <thead><tr><th>Date</th><th>Visitor</th><th>Original</th><th>Requested</th><th>Status</th><th>Comment</th><th>Decided On</th></tr></thead>
+                <tbody id="approverHistoryBody"><tr><td colspan="7"><div class="empty"><div class="empty-icon">📋</div><div class="empty-text">No decisions yet</div></div></td></tr></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── ADMIN SECTIONS ─────────────────────────────────────── -->
+
         <div class="page-section" id="sec-adminPending">
           <div class="section-hd">
             <div>
@@ -1065,7 +1112,9 @@ function showSection(id, btn) {
     adminPending:  ['Pending Approvals','Review and act on submitted requests'],
     adminSchedules:['All Schedules','Complete team visit plan overview'],
     adminHistory:  ['Approvals History','All change request decisions'],
-    adminSettings: ['Email Settings','Gmail SMTP configuration'],
+    adminSettings:    ['Email Settings','Gmail SMTP configuration'],
+    approverPending:  ['Pending Requests','Change requests waiting for your decision'],
+    approverHistory:  ['Decision History','All requests you have approved or rejected'],
   };
   const t = titles[id] || ['Dashboard',''];
   document.getElementById('topbarTitle').textContent = t[0];
@@ -1086,19 +1135,27 @@ function showApp() {
   const initials = currentUser.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
   document.getElementById('userAva').textContent          = initials;
   document.getElementById('userNameSidebar').textContent  = currentUser.name;
-  document.getElementById('userRoleSidebar').innerHTML    =
+  document.getElementById('userRoleSidebar').innerHTML =
     currentUser.isAdmin
       ? 'Administrator <span class="admin-chip">ADMIN</span>'
-      : (visitorsData[currentUser.visitor]?.designation || '—');
+      : currentUser.isApprover
+        ? 'Approver <span class="admin-chip" style="background:#0891B2;color:#fff">APPROVER</span>'
+        : (visitorsData[currentUser.visitor]?.designation || '—');
+
+  // Hide all navs first
+  document.getElementById('adminNav').style.display    = 'none';
+  document.getElementById('approverNav').style.display = 'none';
+  document.getElementById('visitorNav').style.display  = 'none';
 
   if (currentUser.isAdmin) {
-    document.getElementById('adminNav').style.display   = 'block';
-    document.getElementById('visitorNav').style.display = 'none';
+    document.getElementById('adminNav').style.display = 'block';
     showSection('adminPending', document.querySelector('#adminNav .nav-item'));
     loadEmailCfg();
+  } else if (currentUser.isApprover) {
+    document.getElementById('approverNav').style.display = 'block';
+    showSection('approverPending', document.querySelector('#approverNav .nav-item'));
   } else {
     document.getElementById('visitorNav').style.display = 'block';
-    document.getElementById('adminNav').style.display   = 'none';
     showSection('mySchedule', document.querySelector('#visitorNav .nav-item'));
   }
   refreshData();
@@ -1152,6 +1209,8 @@ async function refreshData() {
 }
 
 async function loadVisitors() {
+  // Approvers don't have a schedule view — skip visitor data load
+  if (currentUser.isApprover) return;
   const res  = await apiFetch('/api/visitors');
   const json = await res.json();
   if (!json.success) throw new Error(json.error);
@@ -1166,8 +1225,9 @@ async function loadRequestsAndApprovals() {
   changeRequests = (await rr.json()).requests||[];
   approvals      = (await ar.json()).approvals||[];
   updateStats();
-  if (currentUser.isAdmin) { renderPending(); renderAdminHistory(); }
-  else { renderMyRequests(); renderMyHistory(); }
+  if (currentUser.isAdmin)       { renderPending(); renderAdminHistory(); }
+  else if (currentUser.isApprover) { renderApproverPending(); renderApproverHistory(); }
+  else                             { renderMyRequests(); renderMyHistory(); }
 }
 
 // ── Visitor ───────────────────────────────────────────────────────────
@@ -1610,6 +1670,91 @@ function updateStats() {
   document.getElementById('statApproved').textContent = approvals.filter(a=>a.status==='Approved').length;
   document.getElementById('statRejected').textContent = approvals.filter(a=>a.status==='Rejected').length;
   document.getElementById('statPending').textContent  = changeRequests.filter(r=>r.status==='Pending').length;
+}
+
+// ── Approver ──────────────────────────────────────────────────────────
+function renderApproverPending() {
+  const el      = document.getElementById('approverPendingList');
+  const pending = changeRequests.filter(r => r.status === 'Pending');
+  const nb      = document.getElementById('pendingBadgeApprover');
+  if (nb) { nb.textContent = pending.length; nb.className = 'nav-badge' + (pending.length ? ' show' : ''); }
+
+  if (!pending.length) {
+    el.innerHTML = '<div class="card"><div class="card-body"><div class="empty"><div class="empty-icon">✅</div><div class="empty-text">No pending requests assigned to you</div></div></div></div>';
+    return;
+  }
+  const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  el.innerHTML = pending.map(r => {
+    const d  = new Date(r.date);
+    const mm = d.toLocaleDateString('en-IN', {weekday:'short', day:'2-digit', month:'short', year:'numeric'});
+    return `<div class="card" style="margin-bottom:12px">
+      <div class="card-header">
+        <div>
+          <div class="card-title">${r.visitor}</div>
+          <div style="font-size:12px;color:var(--text-muted);margin-top:2px">${r.visitorEmail}</div>
+        </div>
+        <span class="badge badge-pending">Pending</span>
+      </div>
+      <div class="info-strip" style="border-radius:0;border-left:none;border-right:none">
+        <div class="info-item"><div class="info-lbl">Visit Date</div><div class="info-val">${mm}</div></div>
+        <div class="info-item"><div class="info-lbl">Requested Store</div><div class="info-val" style="color:var(--brand);font-weight:700">${r.newPlan}</div></div>
+        <div class="info-item" style="flex:2"><div class="info-lbl">Reason</div><div class="info-val">${r.reason}</div></div>
+      </div>
+      <div class="card-body" style="display:flex;gap:10px;align-items:flex-start;flex-wrap:wrap">
+        <div style="flex:1;min-width:200px">
+          <input type="text" id="apv-comment-${r.id}" placeholder="Comment (required for rejection)…"
+            style="width:100%;padding:8px 12px;border:1.5px solid var(--border-strong);border-radius:var(--radius-sm);font-size:13px;font-family:inherit">
+        </div>
+        <button class="btn btn-success btn-sm" onclick="approverDecide('${r.id}','approve')">✅ Approve</button>
+        <button class="btn btn-danger btn-sm"  onclick="approverDecide('${r.id}','reject')">❌ Reject</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderApproverHistory() {
+  const body = document.getElementById('approverHistoryBody');
+  if (!approvals.length) {
+    body.innerHTML = '<tr><td colspan="7"><div class="empty"><div class="empty-icon">📋</div><div class="empty-text">No decisions yet</div></div></td></tr>';
+    return;
+  }
+  body.innerHTML = [...approvals].reverse().map(a => {
+    const d   = new Date(a.date).toLocaleDateString('en-IN', {day:'2-digit', month:'short', year:'numeric'});
+    const dec = new Date(a.approvedAt || a.rejectedAt).toLocaleDateString('en-IN', {day:'2-digit', month:'short'});
+    const cls = a.status === 'Approved' ? 'approved' : 'rejected';
+    return `<tr>
+      <td>${d}</td>
+      <td style="font-weight:500">${a.visitor}</td>
+      <td style="color:var(--text-muted)">${a.originalPlan}</td>
+      <td style="color:var(--brand);font-weight:600">${a.newPlan}</td>
+      <td><span class="badge badge-${cls}">${a.status}</span></td>
+      <td style="color:var(--text-secondary);font-size:12px">${a.comment || '—'}</td>
+      <td style="color:var(--text-muted);font-size:12px">${dec}</td>
+    </tr>`;
+  }).join('');
+}
+
+async function approverDecide(requestId, action) {
+  const commentEl = document.getElementById(`apv-comment-${requestId}`);
+  const comment   = commentEl ? commentEl.value.trim() : '';
+  if (action === 'reject' && !comment) {
+    showToast('warning', 'Please enter a comment before rejecting');
+    commentEl.focus(); return;
+  }
+  try {
+    const res  = await apiFetch(`/api/requests/${requestId}/${action}`, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({comment})
+    });
+    const json = await res.json();
+    if (json.success) {
+      showToast('success', `Request ${action === 'approve' ? 'Approved' : 'Rejected'} successfully`);
+      await loadRequestsAndApprovals();
+    } else {
+      showToast('danger', json.error);
+    }
+  } catch(e) { showToast('danger', 'Error: ' + e.message); }
 }
 
 // ── Download Schedule (Visitor) ───────────────────────────────────────
