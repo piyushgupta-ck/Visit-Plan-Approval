@@ -446,12 +446,27 @@ def create_request():
         'emailError':    ''
     }
 
-    ok, msg = send_approval_email(change_req)
+    # ── Save request FIRST — always succeeds regardless of email ────────────
+    data['requests'].append(change_req)
+    save_data(data)
+
+    # ── Try sending email — failure does NOT block the request ───────────────
+    try:
+        ok, msg = send_approval_email(change_req)
+    except Exception as e:
+        ok, msg = False, str(e)
+
     change_req['emailSent']  = ok
     change_req['emailError'] = '' if ok else msg
 
-    data['requests'].append(change_req)
+    # Update saved record with email status
+    for r in data['requests']:
+        if r['id'] == change_req['id']:
+            r['emailSent']  = ok
+            r['emailError'] = change_req['emailError']
+            break
     save_data(data)
+
     return jsonify({'success': True, 'request': change_req, 'emailSent': ok, 'emailMsg': msg}), 201
 
 
@@ -792,16 +807,21 @@ def server_info():
 @admin_required
 def test_email():
     cfg = load_email_config()
-    if not cfg.get('gmail') or not cfg.get('app_password'):
-        return jsonify({'success': False, 'error': 'Email not configured'}), 400
+    gmail        = cfg.get('gmail', '').strip()
+    app_password = cfg.get('app_password', '').strip()
+    if not gmail or not app_password:
+        return jsonify({'success': False,
+                        'error': f'Email not configured. gmail={bool(gmail)}, password={bool(app_password)}'}), 400
     fake_req = {
         'id': 'TEST-001', 'visitor': 'Test Visitor',
         'date': datetime.now().strftime('%Y-%m-%d'), 'newPlan': 'TEST',
         'reason': 'SMTP configuration test.',
-        'visitorEmail': cfg['gmail'], 'approverEmail': cfg['gmail']
+        'visitorEmail': gmail, 'approverEmail': gmail
     }
     ok, msg = send_approval_email(fake_req)
-    return jsonify({'success': ok, 'message': msg})
+    # Return full detail so admin can see exactly what failed
+    return jsonify({'success': ok, 'message': msg,
+                    'gmail': gmail, 'base_url': cfg.get('base_url','')})
 
 
 # ══════════════════════════════════════════════════════════════════════════════
