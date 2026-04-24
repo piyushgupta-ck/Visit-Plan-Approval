@@ -339,29 +339,50 @@ def login():
         }
         return jsonify({'success': True, 'user': session['user']})
 
-    # ── Visitor login by email ───────────────────────────────────────────────
+    # ── Visitor OR Approver login by email ──────────────────────────────────
     email = identifier.lower()
     try:
         visitors = read_visitors_from_excel()
     except Exception as e:
         return jsonify({'success': False, 'error': f'Cannot read Excel: {e}'}), 500
 
-    matched = next(
-        (v for v in visitors.values() if v['email'].lower() == email),
-        None
+    # Check if visitor
+    matched_visitor = next(
+        (v for v in visitors.values() if v['email'].lower() == email), None
     )
-    if not matched:
-        return jsonify({'success': False,
-                        'error':   'Email not found. Please use your registered CityKart email.'}), 404
+    if matched_visitor:
+        session.permanent = True
+        session['user'] = {
+            'name':       matched_visitor['name'],
+            'email':      matched_visitor['email'],
+            'isAdmin':    False,
+            'isApprover': False,
+            'visitor':    matched_visitor['name']
+        }
+        return jsonify({'success': True, 'user': session['user']})
 
-    session.permanent = True
-    session['user'] = {
-        'name':    matched['name'],
-        'email':   matched['email'],
-        'isAdmin': False,
-        'visitor': matched['name']
-    }
-    return jsonify({'success': True, 'user': session['user']})
+    # Check if approver — collect all unique approver emails from Excel
+    approver_emails = set(
+        v['approverEmail'].lower()
+        for v in visitors.values()
+        if v.get('approverEmail')
+    )
+    if email in approver_emails:
+        # Derive a display name from email (e.g. ritesh.rathi@citykart.org → Ritesh Rathi)
+        local = email.split('@')[0]
+        display_name = ' '.join(p.capitalize() for p in local.replace('.', ' ').split())
+        session.permanent = True
+        session['user'] = {
+            'name':       display_name,
+            'email':      email,
+            'isAdmin':    False,
+            'isApprover': True,
+            'visitor':    None
+        }
+        return jsonify({'success': True, 'user': session['user']})
+
+    return jsonify({'success': False,
+                    'error': 'Email not found. Please use your registered CityKart email.'}), 404
 
 
 @app.route('/api/logout', methods=['POST'])
@@ -411,6 +432,10 @@ def get_requests():
     user = get_current_user()
     if user['isAdmin']:
         return jsonify({'success': True, 'requests': data['requests']})
+    if user.get('isApprover'):
+        # Approver sees requests assigned to their email
+        mine = [r for r in data['requests'] if r.get('approverEmail','').lower() == user['email'].lower()]
+        return jsonify({'success': True, 'requests': mine})
     # Visitor sees only their own requests
     mine = [r for r in data['requests'] if r['visitor'] == user['visitor']]
     return jsonify({'success': True, 'requests': mine})
@@ -451,10 +476,8 @@ def create_request():
     save_data(data)
 
     # ── Try sending email — failure does NOT block the request ───────────────
-    try:
-        ok, msg = send_approval_email(change_req)
-    except Exception as e:
-        ok, msg = False, str(e)
+    # ok, msg = send_approval_email(change_req)   # temporarily commented out — mail issue under investigation
+    ok, msg = False, 'Email disabled temporarily'
 
     change_req['emailSent']  = ok
     change_req['emailError'] = '' if ok else msg
@@ -477,9 +500,9 @@ def approve_request_api(request_id):
     body = request.get_json() or {}
     comment = body.get('comment', '')
 
-    # Only admin can approve via the dashboard
-    if not user['isAdmin']:
-        return jsonify({'success': False, 'error': 'Only admin can approve requests'}), 403
+    # Only admin or assigned approver can approve
+    if not user['isAdmin'] and not user.get('isApprover'):
+        return jsonify({'success': False, 'error': 'Not authorised to approve requests'}), 403
 
     data   = load_data()
     change = next((r for r in data['requests'] if r['id'] == request_id), None)
@@ -488,9 +511,14 @@ def approve_request_api(request_id):
     if change['status'] != 'Pending':
         return jsonify({'success': False, 'error': f'Already {change["status"]}'}), 400
 
+    # Approver can only act on requests assigned to them
+    if user.get('isApprover') and change.get('approverEmail','').lower() != user['email'].lower():
+        return jsonify({'success': False, 'error': 'This request is not assigned to you'}), 403
+
+    decided_by = 'admin' if user['isAdmin'] else user['name']
     original_plan = _get_original_plan(change)
     change['status'] = 'Approved'
-    approval = _build_record(change, 'Approved', original_plan, comment or 'Approved by admin')
+    approval = _build_record(change, 'Approved', original_plan, comment or f'Approved by {decided_by}')
     data['approvals'].append(approval)
     save_data(data)
     # Write approved store code back to Excel
@@ -505,9 +533,9 @@ def reject_request_api(request_id):
     body    = request.get_json() or {}
     comment = body.get('comment', '').strip()
 
-    # Auth check first
-    if not user['isAdmin']:
-        return jsonify({'success': False, 'error': 'Only admin can reject requests'}), 403
+    # Only admin or assigned approver can reject
+    if not user['isAdmin'] and not user.get('isApprover'):
+        return jsonify({'success': False, 'error': 'Not authorised to reject requests'}), 403
     if not comment:
         return jsonify({'success': False, 'error': 'Comment is required for rejection'}), 400
 
@@ -517,6 +545,10 @@ def reject_request_api(request_id):
         return jsonify({'success': False, 'error': 'Request not found'}), 404
     if change['status'] != 'Pending':
         return jsonify({'success': False, 'error': f'Already {change["status"]}'}), 400
+
+    # Approver can only act on requests assigned to them
+    if user.get('isApprover') and change.get('approverEmail','').lower() != user['email'].lower():
+        return jsonify({'success': False, 'error': 'This request is not assigned to you'}), 403
 
     original_plan    = _get_original_plan(change)
     change['status'] = 'Rejected'
@@ -537,6 +569,9 @@ def get_approvals():
     user = get_current_user()
     if user['isAdmin']:
         return jsonify({'success': True, 'approvals': data['approvals']})
+    if user.get('isApprover'):
+        mine = [a for a in data['approvals'] if a.get('approverEmail','').lower() == user['email'].lower()]
+        return jsonify({'success': True, 'approvals': mine})
     mine = [a for a in data['approvals'] if a['visitor'] == user['visitor']]
     return jsonify({'success': True, 'approvals': mine})
 
