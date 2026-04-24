@@ -57,10 +57,21 @@ ADMIN_USERNAME = 'admin'
 # ══════════════════════════════════════════════════════════════════════════════
 
 def load_email_config():
+    # Priority: saved JSON file → Railway environment variables → defaults
     if os.path.exists(CONFIG_FILE):
         with open(CONFIG_FILE, 'r') as f:
-            return json.load(f)
-    return {'gmail': '', 'app_password': '', 'base_url': 'http://localhost:5000'}
+            try:
+                cfg = json.load(f)
+                if cfg.get('gmail') and cfg.get('app_password'):
+                    return cfg
+            except Exception:
+                pass
+    # Fall back to env vars (useful on Railway where file may not persist)
+    return {
+        'gmail':        os.environ.get('GMAIL_ADDRESS', ''),
+        'app_password': os.environ.get('GMAIL_APP_PASSWORD', ''),
+        'base_url':     os.environ.get('BASE_URL', 'http://localhost:5000'),
+    }
 
 
 def save_email_config(cfg):
@@ -867,17 +878,28 @@ def send_approval_email(change_req):
     msg['Reply-To'] = from_email
     msg.attach(MIMEText(html_body, 'html'))
 
-    try:
-        with smtplib.SMTP('smtp.gmail.com', 587) as s:
-            s.ehlo(); s.starttls(); s.login(gmail, app_password)
-            s.sendmail(gmail, to_email, msg.as_string())
-        return True, 'Email sent successfully'
-    except smtplib.SMTPAuthenticationError:
-        return False, 'Gmail authentication failed. Check your App Password.'
-    except smtplib.SMTPException as e:
-        return False, f'SMTP error: {e}'
-    except Exception as e:
-        return False, f'Error: {e}'
+    # Try port 465 (SSL) first — Railway blocks 587 (STARTTLS)
+    # Fall back to 587 if 465 fails (for local dev compatibility)
+    last_error = ''
+    for method in ['ssl', 'starttls']:
+        try:
+            if method == 'ssl':
+                import ssl as _ssl
+                context = _ssl.create_default_context()
+                with smtplib.SMTP_SSL('smtp.gmail.com', 465, context=context) as s:
+                    s.login(gmail, app_password)
+                    s.sendmail(gmail, to_email, msg.as_string())
+            else:
+                with smtplib.SMTP('smtp.gmail.com', 587) as s:
+                    s.ehlo(); s.starttls(); s.login(gmail, app_password)
+                    s.sendmail(gmail, to_email, msg.as_string())
+            return True, f'Email sent successfully (via {method.upper()})'
+        except smtplib.SMTPAuthenticationError:
+            return False, 'Gmail authentication failed. Check your App Password.'
+        except Exception as e:
+            last_error = f'{method.upper()}: {e}'
+            continue
+    return False, f'Email failed. {last_error}'
 
 
 # ══════════════════════════════════════════════════════════════════════════════
