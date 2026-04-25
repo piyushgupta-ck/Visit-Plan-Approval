@@ -79,16 +79,69 @@ def save_email_config(cfg):
         json.dump(cfg, f, indent=2)
 
 
+# ── Persistent storage: Postgres (Railway) or JSON file (local) ──────────────
+DATABASE_URL = os.environ.get('DATABASE_URL', '')  # set automatically by Railway Postgres plugin
+
+def _get_pg_conn():
+    """Return a psycopg2 connection or None if not available."""
+    if not DATABASE_URL:
+        return None
+    try:
+        import psycopg2
+        conn = psycopg2.connect(DATABASE_URL)
+        return conn
+    except Exception:
+        return None
+
+def _pg_init(conn):
+    """Create the storage table if it doesn't exist."""
+    with conn.cursor() as cur:
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS app_data (
+                key   TEXT PRIMARY KEY,
+                value TEXT NOT NULL
+            )
+        """)
+    conn.commit()
+
 def load_data():
+    conn = _get_pg_conn()
+    if conn:
+        try:
+            _pg_init(conn)
+            with conn.cursor() as cur:
+                cur.execute("SELECT value FROM app_data WHERE key = 'main'")
+                row = cur.fetchone()
+            conn.close()
+            if row:
+                return json.loads(row[0])
+        except Exception:
+            pass
+    # Fall back to JSON file
     if os.path.exists(DATA_FILE):
         with open(DATA_FILE, 'r') as f:
             return json.load(f)
     return {'requests': [], 'approvals': []}
 
-
 def save_data(data):
+    payload = json.dumps(data, default=str)
+    conn = _get_pg_conn()
+    if conn:
+        try:
+            _pg_init(conn)
+            with conn.cursor() as cur:
+                cur.execute("""
+                    INSERT INTO app_data (key, value) VALUES ('main', %s)
+                    ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value
+                """, (payload,))
+            conn.commit()
+            conn.close()
+            return
+        except Exception:
+            pass
+    # Fall back to JSON file
     with open(DATA_FILE, 'w') as f:
-        json.dump(data, f, indent=2, default=str)
+        f.write(payload)
 
 
 def read_visitors_from_excel():
@@ -577,17 +630,30 @@ def get_approvals():
 
 
 @app.route('/api/summary', methods=['GET'])
-@admin_required
+@login_required
 def get_summary():
     """Return per-visitor aggregated summary grouped by designation,
-    optionally filtered by ?year=YYYY&month=M."""
+    optionally filtered by ?year=YYYY&month=M&approver_email=EMAIL."""
     try:
-        year  = request.args.get('year',  type=int)
-        month = request.args.get('month', type=int)
+        year           = request.args.get('year',  type=int)
+        month          = request.args.get('month', type=int)
+        approver_email = request.args.get('approver_email', '').strip().lower()
+
+        # Allow approvers to access their own team summary
+        user = get_current_user()
+        if user.get('isApprover'):
+            approver_email = user['email'].lower()
 
         visitors_raw = read_visitors_from_excel()
         wooqer_lk    = read_wooqer_lookup()
         attend_lk    = read_attendance_lookup()
+
+        # Filter to only visitors assigned to this approver
+        if approver_email:
+            visitors_raw = {
+                name: v for name, v in visitors_raw.items()
+                if v.get('approverEmail', '').lower() == approver_email
+            }
 
         # Designation sort order
         DESIG_ORDER = {
