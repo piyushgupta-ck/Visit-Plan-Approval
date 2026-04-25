@@ -118,7 +118,10 @@ a:hover{text-decoration:underline}
   background:var(--surface);border-right:1px solid var(--border);
   display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;
   z-index:100;
+  transition:transform .22s cubic-bezier(.4,0,.2,1);
 }
+.sidebar.collapsed{transform:translateX(-240px)}
+.main-content{transition:margin-left .22s cubic-bezier(.4,0,.2,1)}
 .sidebar-brand{
   padding:20px 20px 16px;
   border-bottom:1px solid var(--border);
@@ -540,15 +543,15 @@ tbody tr:hover td{background:var(--bg)}
              onkeydown="if(event.key==='Enter') doLogin()">
       <button class="login-btn" id="loginBtn" onclick="doLogin()">Sign in</button>
 
-      <div class="login-divider"><hr><span>Access guide</span><hr></div>
-      <div class="login-hint-row">
-        <span class="hint-icon">👤</span>
-        <span class="hint-text"><strong>Field staff:</strong> Enter your registered CityKart email address</span>
-      </div>
-      <div class="login-hint-row">
-        <span class="hint-icon">🔐</span>
-        <span class="hint-text"><strong>Administrator:</strong> Type <code style="background:var(--bg-alt);padding:1px 5px;border-radius:3px;font-size:11px">admin</code> to access the admin dashboard</span>
-      </div>
+      <!-- <div class="login-divider"><hr><span>Access guide</span><hr></div> -->
+      <!-- <div class="login-hint-row"> -->
+        <!-- <span class="hint-icon">👤</span> -->
+        <!-- <span class="hint-text"><strong>Field staff:</strong> Enter your registered CityKart email address</span> -->
+      <!-- </div> -->
+      <!-- <div class="login-hint-row"> -->
+        <!-- <span class="hint-icon">🔐</span> -->
+        <!-- <span class="hint-text"><strong>Administrator:</strong> Type <code style="background:var(--bg-alt);padding:1px 5px;border-radius:3px;font-size:11px">admin</code> to access the admin dashboard</span> -->
+      <!-- </div> -->
     </div>
   </div>
 </div>
@@ -602,6 +605,9 @@ tbody tr:hover td{background:var(--bg)}
             <span class="nav-icon">⏳</span> Pending Requests
             <span class="nav-badge" id="pendingBadgeApprover"></span>
           </button>
+          <button class="nav-item" onclick="showSection('approverSummary',this);loadApproverSummary()">
+            <span class="nav-icon">📊</span> My Team Summary
+          </button>
           <button class="nav-item" onclick="showSection('approverHistory',this)">
             <span class="nav-icon">📋</span> Decision History
           </button>
@@ -647,9 +653,12 @@ tbody tr:hover td{background:var(--bg)}
     <!-- Main -->
     <div class="main-content">
       <header class="topbar">
-        <div>
-          <div class="topbar-title" id="topbarTitle">Dashboard</div>
-          <div class="topbar-sub" id="topbarSub">Loading…</div>
+        <div style="display:flex;align-items:center;gap:12px">
+          <button class="btn-icon" id="sidebarToggleBtn" title="Toggle navigation" onclick="toggleSidebar()" style="font-size:18px;line-height:1">☰</button>
+          <div>
+            <div class="topbar-title" id="topbarTitle">Dashboard</div>
+            <div class="topbar-sub" id="topbarSub">Loading…</div>
+          </div>
         </div>
         <div class="topbar-right">
           <button class="btn-icon" title="Refresh data from Excel" onclick="refreshData()">🔄</button>
@@ -816,6 +825,38 @@ tbody tr:hover td{background:var(--bg)}
               <table>
                 <thead><tr><th>Date</th><th>Visitor</th><th>Original</th><th>Requested</th><th>Status</th><th>Comment</th><th>Decided On</th></tr></thead>
                 <tbody id="approverHistoryBody"><tr><td colspan="7"><div class="empty"><div class="empty-icon">📋</div><div class="empty-text">No decisions yet</div></div></td></tr></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Approver Summary -->
+        <div class="page-section" id="sec-approverSummary">
+          <div class="section-hd">
+            <div>
+              <div class="section-title">My Team Summary</div>
+              <div class="section-sub">Adherence summary for your assigned visitors</div>
+            </div>
+            <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+              <select id="approverSummaryYearFilter" onchange="onApproverSummaryYearChange()" style="padding:7px 12px;border:1.5px solid var(--border-strong);border-radius:var(--radius-sm);font-size:13px;font-family:inherit;color:var(--text-primary);background:var(--surface)"></select>
+              <select id="approverSummaryMonthFilter" onchange="loadApproverSummary()" style="padding:7px 12px;border:1.5px solid var(--border-strong);border-radius:var(--radius-sm);font-size:13px;font-family:inherit;color:var(--text-primary);background:var(--surface)"></select>
+              <button class="btn btn-ghost btn-sm" onclick="downloadApproverSummary()">⬇ Download Excel</button>
+            </div>
+          </div>
+          <div class="card">
+            <div class="tbl-wrap">
+              <table id="approverSummaryTable">
+                <thead>
+                  <tr>
+                    <th>Designation</th><th>Name</th><th>Total Days</th>
+                    <th>Store Visit Days</th><th>Plan Changed</th><th>Plan Change %</th>
+                    <th>Wooqer Filled</th><th>Wooqer Adh %</th>
+                    <th>Punch Present</th><th>Attend Adh % (Orig)</th><th>Attend Adh % (Upd)</th>
+                  </tr>
+                </thead>
+                <tbody id="approverSummaryBody">
+                  <tr><td colspan="11"><div class="empty"><div class="empty-icon">📊</div><div class="empty-text">Click My Team Summary to load</div></div></td></tr>
+                </tbody>
               </table>
             </div>
           </div>
@@ -1114,6 +1155,7 @@ function showSection(id, btn) {
     adminHistory:  ['Approvals History','All change request decisions'],
     adminSettings:    ['Email Settings','Gmail SMTP configuration'],
     approverPending:  ['Pending Requests','Change requests waiting for your decision'],
+    approverSummary:  ['My Team Summary','Adherence summary for your assigned visitors'],
     approverHistory:  ['Decision History','All requests you have approved or rejected'],
   };
   const t = titles[id] || ['Dashboard',''];
@@ -1757,6 +1799,138 @@ async function approverDecide(requestId, action) {
   } catch(e) { showToast('danger', 'Error: ' + e.message); }
 }
 
+// ── Approver Summary ──────────────────────────────────────────────────
+let approverSummaryData = [];
+
+function populateApproverSummaryFilters() {
+  // Reuse combos from visitorsData if available, else use current year/month
+  const combos = new Set();
+  Object.values(visitorsData).forEach(v => v.plans.forEach(p => {
+    const d = new Date(p.date);
+    combos.add(`${d.getFullYear()}-${d.getMonth()+1}`);
+  }));
+  // If no visitor data loaded (approver only), add current year-month
+  if (!combos.size) {
+    const n = new Date();
+    combos.add(`${n.getFullYear()}-${n.getMonth()+1}`);
+  }
+  const sorted = [...combos].sort();
+  const years  = [...new Set(sorted.map(c=>c.split('-')[0]))].sort();
+  const now    = new Date();
+  const curY   = String(now.getFullYear());
+  const curM   = String(now.getMonth()+1);
+
+  const ySel = document.getElementById('approverSummaryYearFilter');
+  const mSel = document.getElementById('approverSummaryMonthFilter');
+  const prevY = ySel.value || curY;
+  const prevM = mSel.value || curM;
+  ySel.innerHTML = years.map(y=>`<option value="${y}"${y===prevY?' selected':''}>${y}</option>`).join('');
+  const selYear = ySel.value || curY;
+  const months  = [...new Set(sorted.filter(c=>c.startsWith(selYear+'-')).map(c=>c.split('-')[1]))].sort((a,b)=>+a-+b);
+  mSel.innerHTML = months.map(m=>`<option value="${m}"${m===prevM?' selected':''}>${MONTH_NAMES[+m-1]}</option>`).join('');
+}
+
+function onApproverSummaryYearChange() {
+  const ySel = document.getElementById('approverSummaryYearFilter');
+  const mSel = document.getElementById('approverSummaryMonthFilter');
+  const combos = new Set();
+  Object.values(visitorsData).forEach(v => v.plans.forEach(p => {
+    const d = new Date(p.date);
+    combos.add(`${d.getFullYear()}-${d.getMonth()+1}`);
+  }));
+  const months = [...new Set([...combos].filter(c=>c.startsWith(ySel.value+'-')).map(c=>c.split('-')[1]))].sort((a,b)=>+a-+b);
+  mSel.innerHTML = months.map(m=>`<option value="${m}">${MONTH_NAMES[+m-1]}</option>`).join('');
+  loadApproverSummary();
+}
+
+async function loadApproverSummary() {
+  populateApproverSummaryFilters();
+  const year  = document.getElementById('approverSummaryYearFilter').value;
+  const month = document.getElementById('approverSummaryMonthFilter').value;
+  const body  = document.getElementById('approverSummaryBody');
+  body.innerHTML = `<tr><td colspan="11"><div class="empty"><div class="empty-icon">⏳</div><div class="empty-text">Loading…</div></div></td></tr>`;
+  try {
+    const res  = await apiFetch(`/api/summary?year=${year}&month=${month}`);
+    const json = await res.json();
+    if (!json.success) { showToast('danger', json.error); return; }
+    approverSummaryData = json.summary;
+    renderApproverSummaryTable();
+  } catch(e) { showToast('danger','Failed to load summary'); }
+}
+
+function renderApproverSummaryTable() {
+  const body = document.getElementById('approverSummaryBody');
+  if (!approverSummaryData.length) {
+    body.innerHTML = `<tr><td colspan="11"><div class="empty"><div class="empty-icon">📊</div><div class="empty-text">No data for selected period</div></div></td></tr>`;
+    return;
+  }
+  // Reuse same render logic as admin summary
+  const tempData = summaryData;
+  summaryData = approverSummaryData;
+  // Temporarily swap body target
+  const realBody = document.getElementById('summaryBody');
+  // render directly
+  let html = '';
+  approverSummaryData.forEach(r => {
+    html += `<tr>
+      <td style="color:var(--text-muted);font-size:12px">${r.designation}</td>
+      <td style="font-weight:500">${r.name}</td>
+      <td style="text-align:center">${numCell(r.total_days)}</td>
+      <td style="text-align:center">${numCell(r.store_days)}</td>
+      <td style="text-align:center">${numCell(r.plan_changed)}</td>
+      <td style="text-align:center">${pctCell(r.plan_change_pct)}</td>
+      <td style="text-align:center">${numCell(r.wooqer_filled)}</td>
+      <td style="text-align:center">${pctCell(r.wooqer_adh_pct)}</td>
+      <td style="text-align:center">${numCell(r.att_present)}</td>
+      <td style="text-align:center">${pctCell(r.att_adh_orig_pct)}</td>
+      <td style="text-align:center">${pctCell(r.att_adh_upd_pct)}</td>
+    </tr>`;
+  });
+  // Average footer
+  const avg = field => {
+    const vals = approverSummaryData.map(r=>r[field]).filter(v=>v!==null&&v!==undefined);
+    return vals.length ? Math.round(vals.reduce((a,b)=>a+b,0)/vals.length) : null;
+  };
+  const sum = field => approverSummaryData.reduce((a,r)=>(a+(r[field]||0)),0);
+  html += `<tr style="background:var(--brand-light);border-top:2px solid var(--brand)">
+    <td colspan="2" style="font-weight:700;color:var(--brand);text-align:right;padding-right:14px">Team Average</td>
+    <td style="text-align:center;font-weight:700">${sum('total_days')}</td>
+    <td style="text-align:center;font-weight:700">${sum('store_days')}</td>
+    <td style="text-align:center;font-weight:700">${sum('plan_changed')}</td>
+    <td style="text-align:center">${pctCell(avg('plan_change_pct'))}</td>
+    <td style="text-align:center;font-weight:700">${sum('wooqer_filled')}</td>
+    <td style="text-align:center">${pctCell(avg('wooqer_adh_pct'))}</td>
+    <td style="text-align:center;font-weight:700">${sum('att_present')}</td>
+    <td style="text-align:center">${pctCell(avg('att_adh_orig_pct'))}</td>
+    <td style="text-align:center">${pctCell(avg('att_adh_upd_pct'))}</td>
+  </tr>`;
+  body.innerHTML = html;
+  summaryData = tempData;
+}
+
+function downloadApproverSummary() {
+  if (!approverSummaryData.length) { showToast('warning','No data to download'); return; }
+  const year  = document.getElementById('approverSummaryYearFilter').value;
+  const month = document.getElementById('approverSummaryMonthFilter').value;
+  const rows  = approverSummaryData.map(r => ({
+    'Designation':         r.designation,
+    'Name':                r.name,
+    'Total Days':          r.total_days,
+    'Store Visit Days':    r.store_days,
+    'Plan Changed':        r.plan_changed,
+    'Plan Change %':       r.plan_change_pct !== null ? r.plan_change_pct+'%' : '—',
+    'Wooqer Filled':       r.wooqer_filled,
+    'Wooqer Adherence %':  r.wooqer_adh_pct !== null ? r.wooqer_adh_pct+'%' : '—',
+    'Punch Present':       r.att_present,
+    'Attend Adh % (Orig)': r.att_adh_orig_pct !== null ? r.att_adh_orig_pct+'%' : '—',
+    'Attend Adh % (Upd)':  r.att_adh_upd_pct !== null ? r.att_adh_upd_pct+'%' : '—',
+  }));
+  const ws = XLSX.utils.json_to_sheet(rows);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Team Summary');
+  XLSX.writeFile(wb, `MyTeam_Summary_${MONTH_NAMES[+month-1]}${year}.xlsx`);
+}
+
 // ── Download Schedule (Visitor) ───────────────────────────────────────
 function downloadMySchedule() {
   const name = currentUser.visitor;
@@ -2095,6 +2269,21 @@ function showToast(type, message) {
     <span class="toast-close" onclick="this.parentElement.remove()">✕</span>`;
   document.body.appendChild(el);
   setTimeout(()=>el.remove(),7000);
+}
+
+// ── Sidebar toggle ────────────────────────────────────────────────────
+let sidebarCollapsed = false;
+function toggleSidebar() {
+  sidebarCollapsed = !sidebarCollapsed;
+  const sidebar = document.querySelector('.sidebar');
+  const main    = document.querySelector('.main-content');
+  if (sidebarCollapsed) {
+    sidebar.classList.add('collapsed');
+    main.style.marginLeft = '0';
+  } else {
+    sidebar.classList.remove('collapsed');
+    main.style.marginLeft = '240px';
+  }
 }
 
 // ── Data Files (Excel upload) ─────────────────────────────────────────
