@@ -337,13 +337,15 @@ a:hover{text-decoration:underline}
 .btn-block{width:100%;justify-content:center}
 
 /* ─── Table ───────────────────────────────────────────────────────── */
-.tbl-wrap{overflow-x:auto}
+.tbl-wrap{overflow-x:auto;overflow-y:auto;max-height:72vh}
 table{width:100%;border-collapse:collapse;font-size:13px}
 thead tr{background:var(--bg)}
 th{
   padding:10px 14px;text-align:left;font-size:11px;font-weight:700;
   color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;
   border-bottom:1px solid var(--border);white-space:nowrap;
+  position:sticky;top:0;background:var(--bg);z-index:2;
+  box-shadow:0 1px 0 var(--border);
 }
 td{padding:12px 14px;border-bottom:1px solid var(--border);color:var(--text-primary)}
 tbody tr:last-child td{border-bottom:none}
@@ -540,8 +542,16 @@ tbody tr:hover td{background:var(--bg)}
       <label class="login-label" for="loginInput">Email address or admin</label>
       <input class="login-input" type="text" id="loginInput"
              placeholder="you@citykartstores.com"
-             onkeydown="if(event.key==='Enter') doLogin()">
-      <button class="login-btn" id="loginBtn" onclick="doLogin()">Sign in</button>
+             onkeydown="if(event.key==='Enter') document.getElementById('loginPwd').focus()">
+
+      <div id="loginPwdWrap" style="display:none;margin-top:12px">
+        <label class="login-label" for="loginPwd">Password</label>
+        <input class="login-input" type="password" id="loginPwd"
+               placeholder="Enter password"
+               onkeydown="if(event.key==='Enter') doLogin()">
+      </div>
+
+      <button class="login-btn" id="loginBtn" onclick="doLogin()" style="margin-top:16px">Sign in</button>
 
       <!-- <div class="login-divider"><hr><span>Access guide</span><hr></div> -->
       <!-- <div class="login-hint-row"> -->
@@ -898,18 +908,14 @@ tbody tr:hover td{background:var(--bg)}
                     <th>Designation</th>
                     <th>Name</th>
                     <th>Total Days</th>
-                    <th>Store Visit Days</th>
-                    <th>Plan Changed</th>
-                    <th>Plan Change %</th>
-                    <th>Wooqer Filled</th>
-                    <th>Wooqer Adh %</th>
-                    <th>Punch Present</th>
                     <th>Attend Adh % (Orig)</th>
                     <th>Attend Adh % (Upd)</th>
+                    <th>Wooqer Adh %</th>
+                    <th>Plan Change %</th>
                   </tr>
                 </thead>
                 <tbody id="summaryBody">
-                  <tr><td colspan="11"><div class="empty"><div class="empty-icon">📊</div><div class="empty-text">Click Summary to load</div></div></td></tr>
+                  <tr><td colspan="7"><div class="empty"><div class="empty-icon">📊</div><div class="empty-text">Click Summary to load</div></div></td></tr>
                 </tbody>
               </table>
             </div>
@@ -1203,15 +1209,31 @@ function showApp() {
   refreshData();
 }
 
+// Track whether we need password for current identifier
+let _needsPassword = false;
+
+document.getElementById('loginInput').addEventListener('blur', async function() {
+  const val = this.value.trim().toLowerCase();
+  if (!val) return;
+  // Show password field for admin or known approver emails
+  const res  = await fetch('/api/login-type', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({identifier:val})}).catch(()=>null);
+  if (!res) return;
+  const json = await res.json().catch(()=>null);
+  if (!json) return;
+  _needsPassword = json.needsPassword;
+  document.getElementById('loginPwdWrap').style.display = _needsPassword ? 'block' : 'none';
+});
+
 async function doLogin() {
   const val = document.getElementById('loginInput').value.trim();
-  const err = document.getElementById('loginError');
+  const pwd = document.getElementById('loginPwd').value;
   const btn = document.getElementById('loginBtn');
-  err.style.display = 'none';
+  document.getElementById('loginError').style.display = 'none';
   if (!val) { showLoginErr('Please enter your email address or "admin"'); return; }
+  if (_needsPassword && !pwd) { showLoginErr('Please enter your password'); document.getElementById('loginPwd').focus(); return; }
   btn.disabled = true; btn.innerHTML = '<span class="spin"></span> Signing in…';
   try {
-    const res  = await fetch('/api/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({identifier:val})});
+    const res  = await fetch('/api/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({identifier:val, password:pwd})});
     const json = await res.json();
     if (json.success) { currentUser = json.user; showApp(); }
     else showLoginErr(json.error);
@@ -1228,7 +1250,10 @@ async function doLogout() {
   await fetch('/api/logout',{method:'POST'}).catch(()=>{});
   currentUser=null; visitorsData={}; changeRequests=[]; approvals=[];
   document.getElementById('loginInput').value='';
+  document.getElementById('loginPwd').value='';
+  document.getElementById('loginPwdWrap').style.display='none';
   document.getElementById('loginError').style.display='none';
+  _needsPassword = false;
   showLogin();
 }
 
@@ -1620,7 +1645,8 @@ function renderPending() {
       </div>
       <div class="info-strip" style="border-radius:0;border-left:none;border-right:none">
         <div class="info-item"><div class="info-lbl">Visit Date</div><div class="info-val">${mm}</div></div>
-        <div class="info-item"><div class="info-lbl">New Plan</div><div class="info-val" style="color:var(--brand);font-weight:700">${r.newPlan}</div></div>
+        <div class="info-item"><div class="info-lbl">Original Store</div><div class="info-val" style="color:var(--text-secondary);font-weight:600">${r.originalPlan||'—'}</div></div>
+        <div class="info-item"><div class="info-lbl">Requested Store</div><div class="info-val" style="color:var(--brand);font-weight:700">${r.newPlan}</div></div>
         <div class="info-item" style="flex:2"><div class="info-lbl">Reason</div><div class="info-val">${r.reason}</div></div>
         <div class="info-item"><div class="info-lbl">Approver</div><div class="info-val">${r.approverEmail}</div></div>
       </div>
@@ -1667,10 +1693,12 @@ function openModal(id) {
   modalReqId = id;
   const r = changeRequests.find(x=>x.id===id);
   const d = new Date(r.date).toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  const origStore = r.originalPlan || '—';
   document.getElementById('modalDetails').innerHTML = `
     <div class="detail-row"><div class="detail-label">Visitor</div><div class="detail-value">${r.visitor}</div></div>
     <div class="detail-row"><div class="detail-label">Visit Date</div><div class="detail-value">${d}</div></div>
-    <div class="detail-row"><div class="detail-label">New Plan</div><div class="detail-value accent">${r.newPlan}</div></div>
+    <div class="detail-row"><div class="detail-label">Original Store</div><div class="detail-value" style="color:var(--text-secondary);font-weight:600">${origStore}</div></div>
+    <div class="detail-row"><div class="detail-label">Requested Store</div><div class="detail-value accent">${r.newPlan}</div></div>
     <div class="detail-row"><div class="detail-label">Reason</div><div class="detail-value">${r.reason}</div></div>
     <div class="detail-row"><div class="detail-label">From</div><div class="detail-value" style="font-size:12px;color:var(--text-muted)">${r.visitorEmail}</div></div>
     <div class="detail-row"><div class="detail-label">Approver</div><div class="detail-value" style="font-size:12px;color:var(--text-muted)">${r.approverEmail}</div></div>`;
@@ -1739,6 +1767,7 @@ function renderApproverPending() {
       </div>
       <div class="info-strip" style="border-radius:0;border-left:none;border-right:none">
         <div class="info-item"><div class="info-lbl">Visit Date</div><div class="info-val">${mm}</div></div>
+        <div class="info-item"><div class="info-lbl">Original Store</div><div class="info-val" style="color:var(--text-secondary);font-weight:600">${r.originalPlan||'—'}</div></div>
         <div class="info-item"><div class="info-lbl">Requested Store</div><div class="info-val" style="color:var(--brand);font-weight:700">${r.newPlan}</div></div>
         <div class="info-item" style="flex:2"><div class="info-lbl">Reason</div><div class="info-val">${r.reason}</div></div>
       </div>
@@ -2073,14 +2102,49 @@ function numCell(val) {
   return `<span style="font-size:13px">${val}</span>`;
 }
 
+// Track collapsed state per designation
+const summaryCollapsed = {};
+
+function summaryRow(r) {
+  return `<tr>
+    <td style="color:var(--text-muted);font-size:12px;padding-left:28px">${r.designation}</td>
+    <td style="font-weight:500">${r.name}</td>
+    <td style="text-align:center">${numCell(r.total_days)}</td>
+    <td style="text-align:center">${pctCell(r.att_adh_orig_pct)}</td>
+    <td style="text-align:center">${pctCell(r.att_adh_upd_pct)}</td>
+    <td style="text-align:center">${pctCell(r.wooqer_adh_pct)}</td>
+    <td style="text-align:center">${pctCell(r.plan_change_pct)}</td>
+  </tr>`;
+}
+
+function subtotalRow(desig, members) {
+  const avg = field => {
+    const vals = members.map(r=>r[field]).filter(v=>v!==null&&v!==undefined);
+    return vals.length ? Math.round(vals.reduce((a,b)=>a+b,0)/vals.length) : null;
+  };
+  const sum = field => members.reduce((a,r)=>(a+(r[field]||0)),0);
+  return `<tr style="background:var(--bg-alt);border-top:1.5px solid var(--border-strong)">
+    <td colspan="2" style="font-weight:600;color:var(--text-secondary);font-size:12px;padding-left:28px">${desig} Total</td>
+    <td style="text-align:center;font-weight:600">${sum('total_days')}</td>
+    <td style="text-align:center">${pctCell(avg('att_adh_orig_pct'))}</td>
+    <td style="text-align:center">${pctCell(avg('att_adh_upd_pct'))}</td>
+    <td style="text-align:center">${pctCell(avg('wooqer_adh_pct'))}</td>
+    <td style="text-align:center">${pctCell(avg('plan_change_pct'))}</td>
+  </tr>`;
+}
+
+function toggleDesigGroup(desig) {
+  summaryCollapsed[desig] = !summaryCollapsed[desig];
+  renderSummary();
+}
+
 function renderSummary() {
   const body = document.getElementById('summaryBody');
   if (!summaryData.length) {
-    body.innerHTML = `<tr><td colspan="11"><div class="empty"><div class="empty-icon">📊</div><div class="empty-text">No data for selected period</div></div></td></tr>`;
+    body.innerHTML = `<tr><td colspan="7"><div class="empty"><div class="empty-icon">📊</div><div class="empty-text">No data for selected period</div></div></td></tr>`;
     return;
   }
 
-  // Group by designation
   const groups = {};
   summaryData.forEach(r => {
     if (!groups[r.designation]) groups[r.designation] = [];
@@ -2092,69 +2156,41 @@ function renderSummary() {
   const orderedDesigs = [...new Set([...DESIG_ORDER, ...Object.keys(groups)])].filter(d=>groups[d]);
 
   orderedDesigs.forEach(desig => {
-    const members = groups[desig];
+    const members   = groups[desig];
+    const collapsed = summaryCollapsed[desig] || false;
+    const icon      = collapsed ? '＋' : '－';
 
-    // Designation header row
-    html += `<tr style="background:var(--brand-light)">
-      <td colspan="11" style="font-weight:700;color:var(--brand);font-size:12px;letter-spacing:.06em;padding:8px 14px">
-        ${desig} &nbsp;<span style="font-weight:400;color:var(--text-secondary)">(${members.length} members)</span>
+    // Designation group header — clickable to collapse/expand
+    html += `<tr style="background:var(--brand-light);cursor:pointer" onclick="toggleDesigGroup('${desig}')">
+      <td colspan="7" style="font-weight:700;color:var(--brand);font-size:12px;letter-spacing:.06em;padding:9px 14px;user-select:none">
+        <span style="display:inline-block;width:20px;font-size:14px;font-weight:700">${icon}</span>
+        ${desig}
+        <span style="font-weight:400;color:var(--text-secondary);margin-left:6px">(${members.length} members)</span>
       </td>
     </tr>`;
 
-    // Member rows
-    members.forEach(r => {
-      html += `<tr>
-        <td style="color:var(--text-muted);font-size:12px">${r.designation}</td>
-        <td style="font-weight:500">${r.name}</td>
-        <td style="text-align:center">${numCell(r.total_days)}</td>
-        <td style="text-align:center">${numCell(r.store_days)}</td>
-        <td style="text-align:center">${numCell(r.plan_changed)}</td>
-        <td style="text-align:center">${pctCell(r.plan_change_pct)}</td>
-        <td style="text-align:center">${numCell(r.wooqer_filled)}</td>
-        <td style="text-align:center">${pctCell(r.wooqer_adh_pct)}</td>
-        <td style="text-align:center">${numCell(r.att_present)}</td>
-        <td style="text-align:center">${pctCell(r.att_adh_orig_pct)}</td>
-        <td style="text-align:center">${pctCell(r.att_adh_upd_pct)}</td>
-      </tr>`;
-    });
+    // Member rows — hidden when collapsed
+    if (!collapsed) {
+      members.forEach(r => { html += summaryRow(r); });
+    }
 
-    // Designation subtotal row
-    const avg = field => {
-      const vals = members.map(r=>r[field]).filter(v=>v!==null&&v!==undefined);
-      return vals.length ? Math.round(vals.reduce((a,b)=>a+b,0)/vals.length) : null;
-    };
-    const sum = field => members.reduce((a,r)=>(a + (r[field]||0)), 0);
-    html += `<tr style="background:var(--bg-alt);border-top:1.5px solid var(--border-strong)">
-      <td colspan="2" style="font-weight:600;color:var(--text-secondary);font-size:12px;text-align:right;padding-right:14px">${desig} Average</td>
-      <td style="text-align:center;font-weight:600">${sum('total_days')}</td>
-      <td style="text-align:center;font-weight:600">${sum('store_days')}</td>
-      <td style="text-align:center;font-weight:600">${sum('plan_changed')}</td>
-      <td style="text-align:center">${pctCell(avg('plan_change_pct'))}</td>
-      <td style="text-align:center;font-weight:600">${sum('wooqer_filled')}</td>
-      <td style="text-align:center">${pctCell(avg('wooqer_adh_pct'))}</td>
-      <td style="text-align:center;font-weight:600">${sum('att_present')}</td>
-      <td style="text-align:center">${pctCell(avg('att_adh_orig_pct'))}</td>
-      <td style="text-align:center">${pctCell(avg('att_adh_upd_pct'))}</td>
-    </tr>`;
+    // Subtotal always visible
+    html += subtotalRow(desig, members);
   });
 
-  // Grand total row
+  // Grand total
   const grandAvg = field => {
     const vals = summaryData.map(r=>r[field]).filter(v=>v!==null&&v!==undefined);
     return vals.length ? Math.round(vals.reduce((a,b)=>a+b,0)/vals.length) : null;
   };
   const grandSum = field => summaryData.reduce((a,r)=>(a+(r[field]||0)),0);
-  html += `<tr style="background:var(--brand-light);border-top:2px solid var(--brand)">
-    <td colspan="2" style="font-weight:700;color:var(--brand);text-align:right;padding-right:14px">Overall Total / Avg</td>
-    <td style="text-align:center;font-weight:700">${grandSum('total_days')}</td>
-    <td style="text-align:center;font-weight:700">${grandSum('store_days')}</td>
-    <td style="text-align:center;font-weight:700">${grandSum('plan_changed')}</td>
-    <td style="text-align:center">${pctCell(grandAvg('plan_change_pct'))}</td>
-    <td style="text-align:center;font-weight:700">${grandSum('wooqer_filled')}</td>
-    <td style="text-align:center">${pctCell(grandAvg('wooqer_adh_pct'))}</td>
-    <td style="text-align:center;font-weight:700">${grandSum('att_present')}</td>
-    <td style="text-align:center">${pctCell(grandAvg('att_adh_orig_pct'))}</td>
-    <td style="text-align:center">${pctCell(grandAvg('att_adh_upd_pct'))}</td>
+  html += `<tr style="background:var(--brand);color:#fff;border-top:2px solid var(--brand-dark)">
+    <td colspan="2" style="font-weight:700;padding-left:14px;color:#fff">Grand Total</td>
+    <td style="text-align:center;font-weight:700;color:#fff">${grandSum('total_days')}</td>
+    <td style="text-align:center"><span style="font-weight:700;color:#fff">${grandAvg('att_adh_orig_pct')??'—'}%</span></td>
+    <td style="text-align:center"><span style="font-weight:700;color:#fff">${grandAvg('att_adh_upd_pct')??'—'}%</span></td>
+    <td style="text-align:center"><span style="font-weight:700;color:#fff">${grandAvg('wooqer_adh_pct')??'—'}%</span></td>
+    <td style="text-align:center"><span style="font-weight:700;color:#fff">${grandAvg('plan_change_pct')??'—'}%</span></td>
   </tr>`;
 
   body.innerHTML = html;
@@ -2168,14 +2204,10 @@ function downloadSummary() {
     'Designation':          r.designation,
     'Name':                 r.name,
     'Total Days':           r.total_days,
-    'Store Visit Days':     r.store_days,
-    'Plan Changed':         r.plan_changed,
-    'Plan Change %':        r.plan_change_pct !== null ? r.plan_change_pct + '%' : '—',
-    'Wooqer Filled':        r.wooqer_filled,
-    'Wooqer Adherence %':   r.wooqer_adh_pct !== null ? r.wooqer_adh_pct + '%' : '—',
-    'Punch Present':        r.att_present,
     'Attend Adh % (Orig)':  r.att_adh_orig_pct !== null ? r.att_adh_orig_pct + '%' : '—',
     'Attend Adh % (Upd)':   r.att_adh_upd_pct !== null ? r.att_adh_upd_pct + '%' : '—',
+    'Wooqer Adherence %':   r.wooqer_adh_pct !== null ? r.wooqer_adh_pct + '%' : '—',
+    'Plan Change %':        r.plan_change_pct !== null ? r.plan_change_pct + '%' : '—',
   }));
   const ws = XLSX.utils.json_to_sheet(rows);
   const wb = XLSX.utils.book_new();
