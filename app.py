@@ -373,16 +373,41 @@ def admin_required(f):
 #  Auth routes
 # ══════════════════════════════════════════════════════════════════════════════
 
+# Password for admin and approvers — stored as env var or default
+ADMIN_PASSWORD    = os.environ.get('ADMIN_PASSWORD', 'admin@123')
+APPROVER_PASSWORD = os.environ.get('APPROVER_PASSWORD', 'admin@123')
+
+
+@app.route('/api/login-type', methods=['POST'])
+def login_type():
+    """Tell the frontend whether this identifier needs a password."""
+    body       = request.get_json() or {}
+    identifier = body.get('identifier', '').strip().lower()
+    if not identifier:
+        return jsonify({'needsPassword': False})
+    if identifier == ADMIN_USERNAME:
+        return jsonify({'needsPassword': True})
+    try:
+        visitors = read_visitors_from_excel()
+    except Exception:
+        return jsonify({'needsPassword': False})
+    approver_emails = {v.get('approverEmail','').lower() for v in visitors.values() if v.get('approverEmail')}
+    return jsonify({'needsPassword': identifier in approver_emails})
+
+
 @app.route('/api/login', methods=['POST'])
 def login():
     body      = request.get_json() or {}
     identifier = body.get('identifier', '').strip()
+    password   = body.get('password', '').strip()
 
     if not identifier:
         return jsonify({'success': False, 'error': 'Please enter your email or admin username'}), 400
 
     # ── Admin login ──────────────────────────────────────────────────────────
     if identifier.lower() == ADMIN_USERNAME:
+        if password != ADMIN_PASSWORD:
+            return jsonify({'success': False, 'error': 'Incorrect password'}), 401
         session.permanent = True
         session['user'] = {
             'name':    'Administrator',
@@ -421,6 +446,8 @@ def login():
         if v.get('approverEmail')
     )
     if email in approver_emails:
+        if password != APPROVER_PASSWORD:
+            return jsonify({'success': False, 'error': 'Incorrect password'}), 401
         # Derive a display name from email (e.g. ritesh.rathi@citykart.org → Ritesh Rathi)
         local = email.split('@')[0]
         display_name = ' '.join(p.capitalize() for p in local.replace('.', ' ').split())
@@ -509,11 +536,24 @@ def create_request():
     if not user['isAdmin'] and body['visitor'] != user['visitor']:
         return jsonify({'success': False, 'error': 'You can only submit requests for yourself'}), 403
 
+    # Look up the original planned store from Excel for this visitor+date
+    original_plan = ''
+    try:
+        visitors_ex = read_visitors_from_excel()
+        v_data = visitors_ex.get(body['visitor'], {})
+        for p in v_data.get('plans', []):
+            if p['date'] == body['date']:
+                original_plan = p['plan']
+                break
+    except Exception:
+        pass
+
     data = load_data()
     change_req = {
         'id':            'CHG-' + str(int(datetime.now().timestamp() * 1000)),
         'visitor':       body['visitor'],
         'date':          body['date'],
+        'originalPlan':  original_plan,
         'newPlan':       body['newPlan'],
         'reason':        body['reason'],
         'visitorEmail':  body['visitorEmail'],
