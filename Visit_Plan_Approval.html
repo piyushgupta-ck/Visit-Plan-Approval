@@ -1298,6 +1298,16 @@ async function loadRequestsAndApprovals() {
 }
 
 // ── Visitor ───────────────────────────────────────────────────────────
+// ── Non-store plan filter (case-insensitive) ─────────────────────────
+const NON_STORE_PLANS = new Set([
+  'leave','travelling','traveling','w/o','wo','w/off','off',
+  'ho','new site','not in citykart','na','n/a','holiday',
+  'weekly off','training','meeting'
+]);
+function isStoreVisit(plan) {
+  return !NON_STORE_PLANS.has((plan||'').trim().toLowerCase());
+}
+
 // ── Adherence score cell ──────────────────────────────────────────────
 function adhCell(score) {
   if (score === null || score === undefined)
@@ -1352,9 +1362,11 @@ function renderVisitorSchedule() {
   const selM = document.getElementById('myMonthFilter');
   const filterY = selY ? +selY.value : 0;
   const filterM = selM ? +selM.value : 0;
-  const filtered = (filterY && filterM)
-    ? v.plans.filter(p => { const d=new Date(p.date); return d.getFullYear()===filterY && d.getMonth()+1===filterM; })
-    : v.plans;
+  const filtered = v.plans.filter(p => {
+    if (!isStoreVisit(p.plan)) return false;
+    if (filterY && filterM) { const d=new Date(p.date); return d.getFullYear()===filterY && d.getMonth()+1===filterM; }
+    return true;
+  });
 
   document.getElementById('myPlanCount').textContent = filtered.length + ' days';
 
@@ -1398,9 +1410,9 @@ function renderVisitorSchedule() {
   </tr>`;
   body.innerHTML = html;
 
-  // Date dropdown for change request
+  // Date dropdown for change request — only store-visit days
   let opts = '<option value="">Choose a date…</option>';
-  v.plans.forEach(p => {
+  v.plans.filter(p => isStoreVisit(p.plan)).forEach(p => {
     const d = new Date(p.date).toLocaleDateString('en-IN');
     opts += `<option value="${p.date}">${d} — ${p.plan}</option>`;
   });
@@ -1570,9 +1582,11 @@ function renderAdminSchedule() {
   let allPlans = [];   // collect all filtered plans for overall average footer
   names.forEach(name => {
     const v = visitorsData[name];
-    const plans = (filterY && filterM)
-      ? v.plans.filter(p => { const d=new Date(p.date); return d.getFullYear()===filterY && d.getMonth()+1===filterM; })
-      : v.plans;
+    const plans = v.plans.filter(p => {
+      if (!isStoreVisit(p.plan)) return false;
+      if (filterY && filterM) { const d=new Date(p.date); return d.getFullYear()===filterY && d.getMonth()+1===filterM; }
+      return true;
+    });
     allPlans = allPlans.concat(plans);
     plans.forEach(p => {
       const d   = new Date(p.date);
@@ -1967,9 +1981,11 @@ function downloadMySchedule() {
   if (!v || !v.plans.length) { showToast('warning','No schedule data to download'); return; }
   const filterY = +document.getElementById('myYearFilter').value  || 0;
   const filterM = +document.getElementById('myMonthFilter').value || 0;
-  const plans = (filterY && filterM)
-    ? v.plans.filter(p => { const d=new Date(p.date); return d.getFullYear()===filterY && d.getMonth()+1===filterM; })
-    : v.plans;
+  const plans = v.plans.filter(p => {
+    if (!isStoreVisit(p.plan)) return false;
+    if (filterY && filterM) { const d=new Date(p.date); return d.getFullYear()===filterY && d.getMonth()+1===filterM; }
+    return true;
+  });
   if (!plans.length) { showToast('warning','No data for selected period'); return; }
   const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
   const label = (filterY && filterM) ? `${MONTH_NAMES[filterM-1]}${filterY}` : 'Full';
@@ -2007,9 +2023,11 @@ function downloadAdminSchedule() {
   let rows = [];
   names.forEach(name => {
     const v = visitorsData[name];
-    const plans = (filterY && filterM)
-      ? v.plans.filter(p => { const d=new Date(p.date); return d.getFullYear()===filterY && d.getMonth()+1===filterM; })
-      : v.plans;
+    const plans = v.plans.filter(p => {
+      if (!isStoreVisit(p.plan)) return false;
+      if (filterY && filterM) { const d=new Date(p.date); return d.getFullYear()===filterY && d.getMonth()+1===filterM; }
+      return true;
+    });
     plans.forEach(p => {
       const d = new Date(p.date);
       rows.push({
