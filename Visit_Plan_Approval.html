@@ -2041,37 +2041,43 @@ function downloadAdminSchedule() {
 let summaryData = [];
 
 function populateSummaryFilters() {
-  // Reuse year/month combos from visitorsData if loaded, else derive from current year
+  const ySel = document.getElementById('summaryYearFilter');
+  const mSel = document.getElementById('summaryMonthFilter');
+  const now  = new Date();
+  const curY = String(now.getFullYear());
+  const curM = String(now.getMonth()+1);
+
+  // Build combos from visitorsData if available, fallback to last 12 months
   const combos = new Set();
   Object.values(visitorsData).forEach(v => v.plans.forEach(p => {
     const d = new Date(p.date);
     combos.add(`${d.getFullYear()}-${d.getMonth()+1}`);
   }));
+  if (!combos.size) {
+    // Generate last 12 months as fallback
+    for (let i = 0; i < 12; i++) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      combos.add(`${d.getFullYear()}-${d.getMonth()+1}`);
+    }
+  }
   const sorted = [...combos].sort();
   const years  = [...new Set(sorted.map(c=>c.split('-')[0]))].sort();
-  const now    = new Date();
-  const curY   = String(now.getFullYear());
-  const curM   = String(now.getMonth()+1);
 
-  const ySel = document.getElementById('summaryYearFilter');
-  const mSel = document.getElementById('summaryMonthFilter');
-  ySel.innerHTML = years.map(y=>`<option value="${y}"${y===curY?' selected':''}>${y}</option>`).join('');
+  const prevY = ySel.value || curY;
+  const prevM = mSel.value || curM;
+  ySel.innerHTML = years.map(y=>`<option value="${y}"${y===prevY?' selected':''}>${y}</option>`).join('');
 
   const selYear = ySel.value || curY;
   const months  = [...new Set(sorted.filter(c=>c.startsWith(selYear+'-')).map(c=>c.split('-')[1]))].sort((a,b)=>+a-+b);
-  mSel.innerHTML = months.map(m=>`<option value="${m}"${m===curM?' selected':''}>${MONTH_NAMES[+m-1]}</option>`).join('');
+  // Make sure all 12 months are shown for the selected year (not just what's in data)
+  const allMonths = Array.from({length:12},(_,i)=>String(i+1));
+  const monthList = months.length ? months : allMonths;
+  mSel.innerHTML = monthList.map(m=>`<option value="${m}"${m===prevM?' selected':''}>${MONTH_NAMES[+m-1]}</option>`).join('');
+  if (!monthList.includes(mSel.value)) mSel.value = monthList[0] || '';
 }
 
 function onSummaryYearChange() {
-  const ySel = document.getElementById('summaryYearFilter');
-  const mSel = document.getElementById('summaryMonthFilter');
-  const combos = new Set();
-  Object.values(visitorsData).forEach(v => v.plans.forEach(p => {
-    const d = new Date(p.date);
-    combos.add(`${d.getFullYear()}-${d.getMonth()+1}`);
-  }));
-  const months = [...new Set([...combos].filter(c=>c.startsWith(ySel.value+'-')).map(c=>c.split('-')[1]))].sort((a,b)=>+a-+b);
-  mSel.innerHTML = months.map(m=>`<option value="${m}">${MONTH_NAMES[+m-1]}</option>`).join('');
+  populateSummaryFilters();
   loadSummary();
 }
 
@@ -2079,13 +2085,16 @@ async function loadSummary() {
   populateSummaryFilters();
   const year  = document.getElementById('summaryYearFilter').value;
   const month = document.getElementById('summaryMonthFilter').value;
+  if (!year || !month) { showToast('warning','Please select a year and month'); return; }
   const body  = document.getElementById('summaryBody');
-  body.innerHTML = `<tr><td colspan="11"><div class="empty"><div class="empty-icon">⏳</div><div class="empty-text">Loading…</div></div></td></tr>`;
+  body.innerHTML = `<tr><td colspan="7"><div class="empty"><div class="empty-icon">⏳</div><div class="empty-text">Loading…</div></div></td></tr>`;
   try {
     const res  = await apiFetch(`/api/summary?year=${year}&month=${month}`);
     const json = await res.json();
     if (!json.success) { showToast('danger', json.error); return; }
-    summaryData = json.summary;
+    summaryData      = json.summary;
+    summaryDrillOpen = {};   // reset drill-down on filter change
+    summaryDrillData = {};
     renderSummary();
   } catch(e) { showToast('danger','Failed to load summary'); }
 }
@@ -2102,19 +2111,59 @@ function numCell(val) {
   return `<span style="font-size:13px">${val}</span>`;
 }
 
-// Track collapsed state per designation
+// Track collapsed state per designation & drill-down open per name
 const summaryCollapsed = {};
+let   summaryDrillOpen = {};   // name → true/false
+let   summaryDrillData = {};   // name → array of detail rows
 
 function summaryRow(r) {
+  const isOpen   = summaryDrillOpen[r.name] || false;
+  const drillIcon = isOpen ? '▾' : '▸';
   return `<tr>
     <td style="color:var(--text-muted);font-size:12px;padding-left:28px">${r.designation}</td>
-    <td style="font-weight:500">${r.name}</td>
+    <td style="font-weight:500;cursor:pointer;color:var(--brand)" onclick="toggleDrillDown('${r.name.replace(/'/g,"\\'")}')">
+      <span style="font-size:11px;margin-right:4px">${drillIcon}</span>${r.name}
+    </td>
     <td style="text-align:center">${numCell(r.total_days)}</td>
     <td style="text-align:center">${pctCell(r.att_adh_orig_pct)}</td>
     <td style="text-align:center">${pctCell(r.att_adh_upd_pct)}</td>
     <td style="text-align:center">${pctCell(r.wooqer_adh_pct)}</td>
     <td style="text-align:center">${pctCell(r.plan_change_pct)}</td>
   </tr>`;
+}
+
+function drillRow(d) {
+  const dt  = new Date(d.date).toLocaleDateString('en-IN',{day:'2-digit',month:'short'});
+  const day = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][new Date(d.date).getDay()];
+  const bg  = !d.is_visit ? '#FAFAFA' : '';
+  return `<tr style="background:${bg}">
+    <td></td>
+    <td style="padding-left:44px;color:var(--text-muted);font-size:12px">${dt} <span style="color:var(--text-muted)">${day}</span></td>
+    <td style="text-align:center">
+      <span style="font-size:12px;font-weight:600;color:var(--brand);background:var(--brand-light);padding:2px 8px;border-radius:4px">${d.plan}</span>
+      ${d.updated_plan ? `<span style="font-size:11px;color:var(--success);margin-left:4px">→${d.updated_plan}</span>` : ''}
+    </td>
+    <td style="text-align:center">${d.punch_store ? `<span style="font-size:12px">${d.punch_store}</span>` : '<span style="color:var(--text-muted);font-size:12px">—</span>'}</td>
+    <td style="text-align:center">${adhCell(d.attend_adh)}</td>
+    <td style="text-align:center">${d.wooqer_store ? `<span style="font-size:12px">${d.wooqer_store}</span>` : '<span style="color:var(--text-muted);font-size:12px">—</span>'}</td>
+    <td style="text-align:center">${adhCell(d.wooqer_adh)}</td>
+  </tr>`;
+}
+
+async function toggleDrillDown(name) {
+  summaryDrillOpen[name] = !summaryDrillOpen[name];
+  if (summaryDrillOpen[name] && !summaryDrillData[name]) {
+    // Fetch detail from API
+    const year  = document.getElementById('summaryYearFilter').value;
+    const month = document.getElementById('summaryMonthFilter').value;
+    try {
+      const res  = await apiFetch(`/api/summary/detail?name=${encodeURIComponent(name)}&year=${year}&month=${month}`);
+      const json = await res.json();
+      if (json.success) summaryDrillData[name] = json.detail;
+      else { showToast('danger', json.error); summaryDrillOpen[name] = false; return; }
+    } catch(e) { showToast('danger','Failed to load detail'); summaryDrillOpen[name] = false; return; }
+  }
+  renderSummary();
 }
 
 function subtotalRow(desig, members) {
@@ -2171,7 +2220,23 @@ function renderSummary() {
 
     // Member rows — hidden when collapsed
     if (!collapsed) {
-      members.forEach(r => { html += summaryRow(r); });
+      members.forEach(r => {
+        html += summaryRow(r);
+        // Drill-down detail rows
+        if (summaryDrillOpen[r.name] && summaryDrillData[r.name]) {
+          // Header for detail columns
+          html += `<tr style="background:#F0F4FF">
+            <td></td>
+            <td style="padding-left:44px;font-size:11px;font-weight:700;color:var(--text-muted);letter-spacing:.04em">DATE</td>
+            <td style="font-size:11px;font-weight:700;color:var(--text-muted);letter-spacing:.04em">PLAN STORE</td>
+            <td style="font-size:11px;font-weight:700;color:var(--text-muted);text-align:center;letter-spacing:.04em">PUNCH STORE</td>
+            <td style="font-size:11px;font-weight:700;color:var(--text-muted);text-align:center;letter-spacing:.04em">ATTEND ADH%</td>
+            <td style="font-size:11px;font-weight:700;color:var(--text-muted);text-align:center;letter-spacing:.04em">WOOQER STORE</td>
+            <td style="font-size:11px;font-weight:700;color:var(--text-muted);text-align:center;letter-spacing:.04em">WOOQER ADH%</td>
+          </tr>`;
+          summaryDrillData[r.name].forEach(d => { html += drillRow(d); });
+        }
+      });
     }
 
     // Subtotal always visible
