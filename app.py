@@ -234,7 +234,11 @@ def read_wooqer_lookup():
 
 
 def read_attendance_lookup():
-    """Return dict keyed by (name_lower, 'YYYY-MM-DD') → {store, status}."""
+    """Return dict keyed by (name_lower, 'YYYY-MM-DD') → {store, punch_in}.
+    Uses PUNCH_DATE (col 7, index 7) — NOT PUNCH_DATE2.
+    No STATUS column used — presence is determined by having a punch record.
+    When multiple rows exist for same person+date, keeps the EARLIEST PUNCH_IN.
+    """
     lookup = {}
     if not os.path.exists(ATTEND_FILE):
         return lookup
@@ -243,24 +247,31 @@ def read_attendance_lookup():
         ws = wb['Attnd']
         for row in ws.iter_rows(min_row=2, values_only=True):
             cols = list(row) + [None]*20
-            emp_name   = cols[14]   # EMP_NAME
-            punch_date = cols[7]    # PUNCH_DATE2
-            store      = cols[9]    # STORE_NAME
-            status     = cols[13]   # STATUS  (P / A)
-            if emp_name and punch_date and store and str(emp_name).strip() != '-':
+            emp_name   = cols[14]   # EMP_NAME  (col O)
+            punch_date = cols[7]    # PUNCH_DATE (col H) — was PUNCH_DATE2 before
+            store      = cols[9]    # STORE_NAME (col J)
+            punch_in   = cols[10]   # PUNCH_IN   (col K)
+            if emp_name and punch_date and store and str(emp_name).strip() not in ('-', ''):
                 d = _normalise_date(punch_date)
                 if d:
                     key = (emp_name.strip().lower(), d)
-                    # Keep first punch record per person per day
+                    # Parse punch_in to a comparable string for earliest-punch logic
+                    pi_str = str(punch_in).strip() if punch_in else '99:99:99'
                     if key not in lookup:
                         lookup[key] = {
-                            'store':  str(store).strip().upper(),
-                            'status': str(status).strip() if status else '—'
+                            'store':    str(store).strip().upper(),
+                            'punch_in': pi_str
                         }
+                    else:
+                        # Keep earliest PUNCH_IN
+                        if pi_str < lookup[key]['punch_in']:
+                            lookup[key] = {
+                                'store':    str(store).strip().upper(),
+                                'punch_in': pi_str
+                            }
     except Exception:
         pass
     return lookup
-
 
 # Plans that are not store visits — excluded from adherence %
 NON_STORE_PLANS = {
@@ -307,14 +318,14 @@ def enrich_plans_with_compliance(visitors):
             p['wooqer_adherence'] = (100 if w_match else 0) if is_visit else None
 
             # ── Attendance vs ORIGINAL plan ──────────────────────────────────
+            # Presence = a punch record exists (no STATUS column used)
             a_rec = attend_lk.get(key)
             if a_rec:
                 a_store  = a_rec['store']
-                a_present = (a_rec['status'] == 'P')
-                ao_match  = a_present and (a_store == original_store)
+                ao_match = (a_store == original_store)
                 p['attendance_original'] = {
                     'store':  a_store,
-                    'status': 'match' if ao_match else ('absent' if not a_present else 'diff')
+                    'status': 'match' if ao_match else 'diff'
                 }
             else:
                 ao_match = False
@@ -324,12 +335,11 @@ def enrich_plans_with_compliance(visitors):
 
             # ── Attendance vs UPDATED plan ───────────────────────────────────
             if a_rec:
-                a_store   = a_rec['store']
-                a_present = (a_rec['status'] == 'P')
-                au_match  = a_present and (a_store == effective)
+                a_store  = a_rec['store']
+                au_match = (a_store == effective)
                 p['attendance_updated'] = {
                     'store':  a_store,
-                    'status': 'match' if au_match else ('absent' if not a_present else 'diff'),
+                    'status': 'match' if au_match else 'diff',
                     'has_update': bool(updated_store)
                 }
             else:
@@ -703,12 +713,36 @@ def get_summary():
             'CLUSTER_CVM':      4,
         }
 
+        # ── Date range: month-start to today (or month-end for past months) ──
+        today     = date.today()
+        date_from = None
+        date_to   = None
+        if year and month:
+            date_from = date(year, month, 1)
+            # If selected month is current month → up to today
+            # Otherwise → up to last day of that month
+            if year == today.year and month == today.month:
+                date_to = today
+            else:
+                import calendar
+                last_day = calendar.monthrange(year, month)[1]
+                date_to  = date(year, month, last_day)
+
+        def in_range(date_str):
+            if not date_from:
+                return True
+            try:
+                d = date.fromisoformat(date_str)
+                return date_from <= d <= date_to
+            except Exception:
+                return False
+
+        def pct(num, den):
+            return round(num / den * 100) if den else None
+
         rows = []
         for name, v in visitors_raw.items():
-            plans = v['plans']
-            if year and month:
-                plans = [p for p in plans
-                         if p['date'].startswith(f'{year}-{month:02d}')]
+            plans = [p for p in v['plans'] if in_range(p['date'])]
             if not plans:
                 continue
 
@@ -735,34 +769,115 @@ def get_summary():
                     if w == effective:
                         wooqer_correct += 1
 
+                # Presence = punch record exists (no STATUS)
                 a = attend_lk.get(key, {})
-                if a.get('status') == 'P':
+                if a.get('store'):
                     att_present += 1
                     if a['store'] == plan_str.upper():
                         att_correct_orig += 1
                     if a['store'] == effective:
                         att_correct_upd += 1
 
-            def pct(num, den):
-                return round(num / den * 100) if den else None
-
             rows.append({
-                'designation':         v['designation'] or '—',
-                'name':                name,
-                'total_days':          total,
-                'store_days':          store_days,
-                'plan_changed':        plan_changed,
-                'plan_change_pct':     pct(plan_changed, store_days),
-                'wooqer_filled':       wooqer_filled,
-                'wooqer_adh_pct':      pct(wooqer_correct, store_days),
-                'att_present':         att_present,
-                'att_adh_orig_pct':    pct(att_correct_orig, store_days),
-                'att_adh_upd_pct':     pct(att_correct_upd, store_days),
+                'designation':      v['designation'] or '—',
+                'name':             name,
+                'total_days':       total,
+                'store_days':       store_days,
+                'plan_changed':     plan_changed,
+                'plan_change_pct':  pct(plan_changed, store_days),
+                'wooqer_filled':    wooqer_filled,
+                'wooqer_adh_pct':   pct(wooqer_correct, store_days),
+                'att_present':      att_present,
+                'att_adh_orig_pct': pct(att_correct_orig, store_days),
+                'att_adh_upd_pct':  pct(att_correct_upd, store_days),
             })
 
         # Sort by designation hierarchy then name
         rows.sort(key=lambda r: (DESIG_ORDER.get(r['designation'], 99), r['name'].lower()))
-        return jsonify({'success': True, 'summary': rows})
+        return jsonify({'success': True, 'summary': rows,
+                        'date_from': str(date_from) if date_from else None,
+                        'date_to':   str(date_to)   if date_to   else None})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@app.route('/api/summary/detail', methods=['GET'])
+@login_required
+def get_summary_detail():
+    """Return day-wise breakdown for one visitor within a date range."""
+    try:
+        visitor_name   = request.args.get('name', '').strip()
+        year           = request.args.get('year',  type=int)
+        month          = request.args.get('month', type=int)
+        approver_email = request.args.get('approver_email', '').strip().lower()
+
+        user = get_current_user()
+        if user.get('isApprover'):
+            approver_email = user['email'].lower()
+
+        if not visitor_name:
+            return jsonify({'success': False, 'error': 'name required'}), 400
+
+        visitors_raw = read_visitors_from_excel()
+        v = visitors_raw.get(visitor_name)
+        if not v:
+            return jsonify({'success': False, 'error': 'Visitor not found'}), 404
+
+        # Approver can only drill down into their own team
+        if approver_email and v.get('approverEmail', '').lower() != approver_email:
+            return jsonify({'success': False, 'error': 'Not authorised'}), 403
+
+        wooqer_lk = read_wooqer_lookup()
+        attend_lk  = read_attendance_lookup()
+
+        today     = date.today()
+        date_from = None
+        date_to   = None
+        if year and month:
+            import calendar
+            date_from = date(year, month, 1)
+            date_to   = today if (year == today.year and month == today.month) \
+                              else date(year, month, calendar.monthrange(year, month)[1])
+
+        def in_range(date_str):
+            if not date_from: return True
+            try:
+                d = date.fromisoformat(date_str)
+                return date_from <= d <= date_to
+            except Exception:
+                return False
+
+        detail_rows = []
+        name_lower  = visitor_name.strip().lower()
+        for p in v['plans']:
+            if not in_range(p['date']): continue
+            plan_str   = p['plan'].strip()
+            change_str = p.get('updatedPlan', '').strip()
+            effective  = change_str.upper() if change_str else plan_str.upper()
+            key        = (name_lower, p['date'])
+            is_visit   = _is_store_visit(plan_str)
+
+            w_store = wooqer_lk.get(key, '')
+            a_rec   = attend_lk.get(key, {})
+            a_store = a_rec.get('store', '')
+
+            w_adh = (100 if w_store == effective else 0) if (is_visit and w_store) else (None if not is_visit else 0)
+            a_adh = (100 if a_store == effective else 0) if (is_visit and a_store) else (None if not is_visit else 0)
+
+            detail_rows.append({
+                'date':         p['date'],
+                'plan':         plan_str,
+                'updated_plan': change_str,
+                'punch_store':  a_store,
+                'wooqer_store': w_store,
+                'attend_adh':   a_adh,
+                'wooqer_adh':   w_adh,
+                'is_visit':     is_visit,
+            })
+
+        return jsonify({'success': True, 'detail': detail_rows,
+                        'date_from': str(date_from) if date_from else None,
+                        'date_to':   str(date_to)   if date_to   else None})
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
 
