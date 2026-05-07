@@ -6,7 +6,7 @@ import secrets
 import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-from datetime import datetime, date
+from datetime import datetime, date, timedelta
 from functools import wraps
 
 from werkzeug.middleware.proxy_fix import ProxyFix
@@ -56,21 +56,46 @@ ADMIN_USERNAME = 'admin'
 #  Helpers
 # ══════════════════════════════════════════════════════════════════════════════
 
+def _railway_base_url():
+    """Auto-detect the public base URL when running on Railway."""
+    # Railway sets RAILWAY_PUBLIC_DOMAIN automatically (e.g. myapp.up.railway.app)
+    domain = os.environ.get('RAILWAY_PUBLIC_DOMAIN', '').strip()
+    if domain:
+        return f'https://{domain}'
+    # Also honour a manually set BASE_URL env var
+    base = os.environ.get('BASE_URL', '').strip()
+    if base:
+        return base
+    return 'http://localhost:5000'
+
+
 def load_email_config():
-    # Priority: saved JSON file → Railway environment variables → defaults
+    """Priority: saved JSON file → Railway environment variables → defaults.
+    base_url is always refreshed from the Railway domain so email links
+    work correctly even after a redeploy or domain change."""
+    cfg = {}
     if os.path.exists(CONFIG_FILE):
         with open(CONFIG_FILE, 'r') as f:
             try:
                 cfg = json.load(f)
-                if cfg.get('gmail') and cfg.get('app_password'):
-                    return cfg
             except Exception:
-                pass
-    # Fall back to env vars (useful on Railway where file may not persist)
+                cfg = {}
+
+    # Credentials: prefer saved file, fall back to env vars
+    gmail        = cfg.get('gmail', '').strip()        or os.environ.get('GMAIL_ADDRESS', '')
+    app_password = cfg.get('app_password', '').strip() or os.environ.get('GMAIL_APP_PASSWORD', '')
+
+    # base_url: always prefer the live Railway domain so approve/reject links
+    # point to the correct public URL even when the saved file has an old value.
+    base_url = _railway_base_url()
+    # If not on Railway (no RAILWAY_PUBLIC_DOMAIN) and the file has a custom value, use it
+    if not os.environ.get('RAILWAY_PUBLIC_DOMAIN') and cfg.get('base_url'):
+        base_url = cfg['base_url']
+
     return {
-        'gmail':        os.environ.get('GMAIL_ADDRESS', ''),
-        'app_password': os.environ.get('GMAIL_APP_PASSWORD', ''),
-        'base_url':     os.environ.get('BASE_URL', 'http://localhost:5000'),
+        'gmail':        gmail,
+        'app_password': app_password,
+        'base_url':     base_url,
     }
 
 
@@ -248,7 +273,7 @@ def read_attendance_lookup():
         for row in ws.iter_rows(min_row=2, values_only=True):
             cols = list(row) + [None]*20
             emp_name   = cols[14]   # EMP_NAME  (col O)
-            punch_date = cols[7]    # PUNCH_DATE (col H) — was PUNCH_DATE2 before
+            punch_date = cols[7]    # PUNCH_DATE (col H)
             store      = cols[9]    # STORE_NAME (col J)
             punch_in   = cols[10]   # PUNCH_IN   (col K)
             if emp_name and punch_date and store and str(emp_name).strip() not in ('-', ''):
@@ -277,7 +302,7 @@ def read_attendance_lookup():
 NON_STORE_PLANS = {
     'leave', 'travelling', 'traveling', 'w/o', 'wo', 'w/off', 'off',
     'ho', 'new site', 'not in citykart', 'na', 'n/a', 'holiday',
-    'weekly off', 'training', 'meeting'
+    'weekly off', 'training', 'meeting', 'WO'
 }
 
 def _is_store_visit(plan_str):
@@ -334,21 +359,26 @@ def enrich_plans_with_compliance(visitors):
             p['attend_original_adherence'] = (100 if ao_match else 0) if is_visit else None
 
             # ── Attendance vs UPDATED plan ───────────────────────────────────
-            if a_rec:
-                a_store  = a_rec['store']
-                au_match = (a_store == effective)
-                p['attendance_updated'] = {
-                    'store':  a_store,
-                    'status': 'match' if au_match else 'diff',
-                    'has_update': bool(updated_store)
-                }
+            # Only meaningful when an approved updated store exists
+            if updated_store:
+                if a_rec:
+                    a_store  = a_rec['store']
+                    au_match = (a_store == updated_store)
+                    p['attendance_updated'] = {
+                        'store':  a_store,
+                        'status': 'match' if au_match else 'diff',
+                        'has_update': True
+                    }
+                else:
+                    au_match = False
+                    p['attendance_updated'] = {
+                        'store': '', 'status': 'missing', 'has_update': True
+                    }
+                p['attend_updated_adherence'] = (100 if au_match else 0) if is_visit else None
             else:
-                au_match = False
-                p['attendance_updated'] = {
-                    'store': '', 'status': 'missing', 'has_update': bool(updated_store)
-                }
-
-            p['attend_updated_adherence'] = (100 if au_match else 0) if is_visit else None
+                # No plan change — updated columns show N/A
+                p['attendance_updated'] = {'store': '', 'status': 'na', 'has_update': False}
+                p['attend_updated_adherence'] = None
 
     return visitors
 
@@ -579,8 +609,7 @@ def create_request():
     save_data(data)
 
     # ── Try sending email — failure does NOT block the request ───────────────
-    # ok, msg = send_approval_email(change_req)   # temporarily commented out — mail issue under investigation
-    ok, msg = False, 'Email disabled temporarily'
+    ok, msg = send_approval_email(change_req)
 
     change_req['emailSent']  = ok
     change_req['emailError'] = '' if ok else msg
@@ -713,16 +742,17 @@ def get_summary():
             'CLUSTER_CVM':      4,
         }
 
-        # ── Date range: month-start to today (or month-end for past months) ──
+        # ── Date range: month-start to yesterday (or month-end for past months) ──
         today     = date.today()
+        yesterday = today - timedelta(days=1)
         date_from = None
         date_to   = None
         if year and month:
             date_from = date(year, month, 1)
-            # If selected month is current month → up to today
+            # If selected month is current month → up to yesterday
             # Otherwise → up to last day of that month
             if year == today.year and month == today.month:
-                date_to = today
+                date_to = yesterday
             else:
                 import calendar
                 last_day = calendar.monthrange(year, month)[1]
@@ -749,6 +779,7 @@ def get_summary():
             total = len(plans)
             store_days = plan_changed = wooqer_filled = wooqer_correct = 0
             att_correct_orig = att_correct_upd = att_present = 0
+            updated_days = 0  # days that have an approved plan change
 
             for p in plans:
                 plan_str   = p['plan'].strip()
@@ -762,6 +793,7 @@ def get_summary():
                 store_days += 1
                 if change_str:
                     plan_changed += 1
+                    updated_days += 1
 
                 w = wooqer_lk.get(key, '')
                 if w:
@@ -775,7 +807,8 @@ def get_summary():
                     att_present += 1
                     if a['store'] == plan_str.upper():
                         att_correct_orig += 1
-                    if a['store'] == effective:
+                    # Only count updated adherence when there's an actual plan change
+                    if change_str and a['store'] == change_str.upper():
                         att_correct_upd += 1
 
             rows.append({
@@ -789,7 +822,7 @@ def get_summary():
                 'wooqer_adh_pct':   pct(wooqer_correct, store_days),
                 'att_present':      att_present,
                 'att_adh_orig_pct': pct(att_correct_orig, store_days),
-                'att_adh_upd_pct':  pct(att_correct_upd, store_days),
+                'att_adh_upd_pct':  pct(att_correct_upd, updated_days),  # only over changed days
             })
 
         # Sort by designation hierarchy then name
@@ -831,12 +864,13 @@ def get_summary_detail():
         attend_lk  = read_attendance_lookup()
 
         today     = date.today()
+        yesterday = today - timedelta(days=1)
         date_from = None
         date_to   = None
         if year and month:
             import calendar
             date_from = date(year, month, 1)
-            date_to   = today if (year == today.year and month == today.month) \
+            date_to   = yesterday if (year == today.year and month == today.month) \
                               else date(year, month, calendar.monthrange(year, month)[1])
 
         def in_range(date_str):
@@ -1029,8 +1063,13 @@ def save_email_config_api():
     if not gmail or not app_password:
         return jsonify({'success': False, 'error': 'Gmail and App Password are required'}), 400
 
-    # Auto-detect server IP if base_url is empty or still localhost
-    if not base_url or base_url in ('http://localhost:5000', 'http://127.0.0.1:5000'):
+    # On Railway, always use the auto-detected public domain — ignore whatever
+    # the user typed in the base_url field (it won't be reachable from email).
+    railway_domain = os.environ.get('RAILWAY_PUBLIC_DOMAIN', '').strip()
+    if railway_domain:
+        base_url = f'https://{railway_domain}'
+    elif not base_url or base_url in ('http://localhost:5000', 'http://127.0.0.1:5000'):
+        # Local dev fallback: detect LAN IP
         import socket
         try:
             s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
