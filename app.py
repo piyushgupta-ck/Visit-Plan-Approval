@@ -1101,22 +1101,39 @@ def server_info():
 @app.route('/api/email-config/test', methods=['POST'])
 @admin_required
 def test_email():
-    cfg = load_email_config()
+    cfg          = load_email_config()
     gmail        = cfg.get('gmail', '').strip()
     app_password = cfg.get('app_password', '').strip()
-    if not gmail or not app_password:
-        return jsonify({'success': False,
-                        'error': f'Email not configured. gmail={bool(gmail)}, password={bool(app_password)}'}), 400
+    resend_key   = os.environ.get('RESEND_API_KEY', '').strip()
+
+    # Determine which method will be used
+    method_used = 'Resend API' if resend_key else ('Gmail SMTP' if gmail and app_password else 'none')
+    if method_used == 'none':
+        return jsonify({
+            'success': False,
+            'message': 'No email method configured. Set RESEND_API_KEY in Railway env vars (recommended), or save Gmail SMTP credentials.',
+            'method': 'none'
+        }), 400
+
+    # Send to the configured gmail address (or resend test address)
+    test_to = gmail or 'test@example.com'
     fake_req = {
-        'id': 'TEST-001', 'visitor': 'Test Visitor',
-        'date': datetime.now().strftime('%Y-%m-%d'), 'newPlan': 'TEST',
-        'reason': 'SMTP configuration test.',
-        'visitorEmail': gmail, 'approverEmail': gmail
+        'id':            'TEST-001',
+        'visitor':       'Test Visitor',
+        'date':          datetime.now().strftime('%Y-%m-%d'),
+        'newPlan':       'TEST-STORE',
+        'reason':        'This is an SMTP/API configuration test.',
+        'visitorEmail':  test_to,
+        'approverEmail': test_to,
     }
     ok, msg = send_approval_email(fake_req)
-    # Return full detail so admin can see exactly what failed
-    return jsonify({'success': ok, 'message': msg,
-                    'gmail': gmail, 'base_url': cfg.get('base_url','')})
+    return jsonify({
+        'success':  ok,
+        'message':  msg,
+        'method':   method_used,
+        'gmail':    gmail,
+        'base_url': cfg.get('base_url', ''),
+    })
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -1132,33 +1149,22 @@ def index():
 #  SMTP sender
 # ══════════════════════════════════════════════════════════════════════════════
 
-def send_approval_email(change_req):
-    cfg          = load_email_config()
-    gmail        = cfg.get('gmail', '').strip()
-    app_password = cfg.get('app_password', '').strip()
-    base_url     = cfg.get('base_url', 'http://localhost:5000').rstrip('/')
-
-    if not gmail or not app_password:
-        return False, 'Email not configured. Please save Gmail settings first.'
-
-    req_id       = change_req['id']
+def _build_email_html(change_req, approve_url, reject_url):
+    """Return the HTML body string for an approval email."""
     visitor_name = change_req['visitor']
     visit_date   = datetime.strptime(change_req['date'], '%Y-%m-%d').strftime('%d %b %Y')
     new_plan     = change_req['newPlan']
     reason       = change_req['reason']
-    to_email     = change_req['approverEmail']
     from_email   = change_req['visitorEmail']
-    approve_url  = f"{base_url}/action/approve/{req_id}"
-    reject_url   = f"{base_url}/action/reject/{req_id}"
-
-    html_body = f"""<!DOCTYPE html>
+    req_id       = change_req['id']
+    return f"""<!DOCTYPE html>
 <html><head><meta charset="UTF-8"><style>
   body{{font-family:'Segoe UI',Arial,sans-serif;background:#f4f4f4;margin:0;padding:20px}}
   .c{{max-width:560px;margin:0 auto;background:#fff;border-radius:10px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,.08)}}
-  .h{{background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;padding:28px 30px;text-align:center}}
+  .h{{background:linear-gradient(135deg,#4F46E5,#6366F1);color:#fff;padding:28px 30px;text-align:center}}
   .h h2{{margin:0;font-size:20px}}.h p{{margin:6px 0 0;font-size:13px;opacity:.85}}
   .b{{padding:28px 30px}}
-  .ib{{background:#f0f4ff;border-left:4px solid #667eea;border-radius:6px;padding:16px 18px;margin-bottom:22px}}
+  .ib{{background:#f0f4ff;border-left:4px solid #4F46E5;border-radius:6px;padding:16px 18px;margin-bottom:22px}}
   .ir{{display:flex;margin-bottom:10px;font-size:14px}}.ir:last-child{{margin-bottom:0}}
   .il{{color:#666;min-width:110px;font-weight:600}}.iv{{color:#333}}
   .ac{{text-align:center;margin:26px 0 10px}}
@@ -1167,7 +1173,7 @@ def send_approval_email(change_req):
   .f{{background:#f9f9f9;text-align:center;padding:14px;font-size:11px;color:#aaa;border-top:1px solid #eee}}
 </style></head><body>
 <div class="c">
-  <div class="h"><h2>🗓️ Visit Plan Change Request</h2><p>Action required — please approve or reject</p></div>
+  <div class="h"><h2>Visit Plan Change Request</h2><p>Action required — please approve or reject</p></div>
   <div class="b">
     <p style="color:#555;font-size:14px;margin-bottom:20px"><strong>{visitor_name}</strong> has submitted a visit plan change request.</p>
     <div class="ib">
@@ -1178,43 +1184,101 @@ def send_approval_email(change_req):
       <div class="ir"><span class="il">From</span><span class="iv">{from_email}</span></div>
     </div>
     <div class="ac">
-      <a href="{approve_url}" class="btn ba">✅ Approve</a>
-      <a href="{reject_url}"  class="btn br">❌ Reject</a>
+      <a href="{approve_url}" class="btn ba">Approve</a>
+      <a href="{reject_url}"  class="btn br">Reject</a>
     </div>
-    <p style="text-align:center;font-size:12px;color:#aaa;margin-top:14px">No login required · ID: {req_id}</p>
+    <p style="text-align:center;font-size:12px;color:#aaa;margin-top:14px">No login required &middot; ID: {req_id}</p>
   </div>
-  <div class="f">CityKart Stores — Visit Plan Approval System</div>
+  <div class="f">CityKart Stores &mdash; Visit Plan Approval System</div>
 </div></body></html>"""
 
+
+def _send_via_resend(to_email, from_label, subject, html_body):
+    """Send using the Resend API (https://resend.com).
+    Requires RESEND_API_KEY env var and a verified sender domain."""
+    import requests as _req
+    api_key = os.environ.get('RESEND_API_KEY', '').strip()
+    if not api_key:
+        return False, 'RESEND_API_KEY not set'
+    # Sender: use the verified domain set in RESEND_FROM, default to onboarding address
+    from_addr = os.environ.get('RESEND_FROM', 'Visit Plan System <onboarding@resend.dev>')
+    payload = {
+        'from':    from_addr,
+        'to':      [to_email],
+        'subject': subject,
+        'html':    html_body,
+        'reply_to': from_label,
+    }
+    try:
+        resp = _req.post(
+            'https://api.resend.com/emails',
+            headers={'Authorization': f'Bearer {api_key}', 'Content-Type': 'application/json'},
+            json=payload,
+            timeout=15
+        )
+        if resp.status_code in (200, 201):
+            return True, f'Email sent via Resend (id={resp.json().get("id","")})'
+        return False, f'Resend API error {resp.status_code}: {resp.text}'
+    except Exception as e:
+        return False, f'Resend request failed: {e}'
+
+
+def _send_via_smtp(gmail, app_password, to_email, subject, html_body, reply_to):
+    """Send via Gmail SMTP — works locally but Railway blocks SMTP ports."""
     msg = MIMEMultipart('alternative')
-    msg['Subject']  = f"[Action Required] Visit Plan Change — {visitor_name} on {visit_date}"
-    msg['From']     = f"Visit Plan System <{gmail}>"
+    msg['Subject']  = subject
+    msg['From']     = f'Visit Plan System <{gmail}>'
     msg['To']       = to_email
-    msg['Reply-To'] = from_email
+    msg['Reply-To'] = reply_to
     msg.attach(MIMEText(html_body, 'html'))
 
-    # Try port 465 (SSL) first — Railway blocks 587 (STARTTLS)
-    # Fall back to 587 if 465 fails (for local dev compatibility)
     last_error = ''
     for method in ['ssl', 'starttls']:
         try:
             if method == 'ssl':
                 import ssl as _ssl
-                context = _ssl.create_default_context()
-                with smtplib.SMTP_SSL('smtp.gmail.com', 465, context=context) as s:
+                ctx = _ssl.create_default_context()
+                with smtplib.SMTP_SSL('smtp.gmail.com', 465, context=ctx) as s:
                     s.login(gmail, app_password)
                     s.sendmail(gmail, to_email, msg.as_string())
             else:
                 with smtplib.SMTP('smtp.gmail.com', 587) as s:
-                    s.ehlo(); s.starttls(); s.login(gmail, app_password)
+                    s.ehlo(); s.starttls()
+                    s.login(gmail, app_password)
                     s.sendmail(gmail, to_email, msg.as_string())
-            return True, f'Email sent successfully (via {method.upper()})'
+            return True, f'Email sent via SMTP ({method.upper()})'
         except smtplib.SMTPAuthenticationError:
-            return False, 'Gmail authentication failed. Check your App Password.'
+            return False, 'Gmail authentication failed — check your App Password (must be 16 chars, no spaces).'
         except Exception as e:
             last_error = f'{method.upper()}: {e}'
-            continue
-    return False, f'Email failed. {last_error}'
+    return False, f'SMTP failed (Railway blocks SMTP ports — use Resend instead). Detail: {last_error}'
+
+
+def send_approval_email(change_req):
+    cfg          = load_email_config()
+    gmail        = cfg.get('gmail', '').strip()
+    app_password = cfg.get('app_password', '').strip()
+    base_url     = cfg.get('base_url', 'http://localhost:5000').rstrip('/')
+
+    req_id      = change_req['id']
+    to_email    = change_req['approverEmail']
+    from_email  = change_req['visitorEmail']
+    visit_date  = datetime.strptime(change_req['date'], '%Y-%m-%d').strftime('%d %b %Y')
+    subject     = f"[Action Required] Visit Plan Change — {change_req['visitor']} on {visit_date}"
+    approve_url = f"{base_url}/action/approve/{req_id}"
+    reject_url  = f"{base_url}/action/reject/{req_id}"
+    html_body   = _build_email_html(change_req, approve_url, reject_url)
+
+    # ── Strategy 1: Resend API (works on Railway, no port restrictions) ──────
+    resend_key = os.environ.get('RESEND_API_KEY', '').strip()
+    if resend_key:
+        return _send_via_resend(to_email, from_email, subject, html_body)
+
+    # ── Strategy 2: Gmail SMTP (works locally, blocked on Railway) ───────────
+    if gmail and app_password:
+        return _send_via_smtp(gmail, app_password, to_email, subject, html_body, from_email)
+
+    return False, 'Email not configured. Add RESEND_API_KEY (recommended) or Gmail SMTP credentials.'
 
 
 # ══════════════════════════════════════════════════════════════════════════════
