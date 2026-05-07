@@ -1340,21 +1340,58 @@ tbody tr{transition:background .1s}
           <div class="section-hd">
             <div>
               <div class="section-title">Email Settings</div>
-              <div class="section-sub">Configure Gmail SMTP for sending approval notifications</div>
+              <div class="section-sub">Configure how approval notification emails are sent</div>
             </div>
           </div>
-          <div class="card">
-            <div class="card-body">
-              <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid var(--border)">
+
+          <!-- Method banner -->
+          <div id="emailMethodBanner" style="display:flex;align-items:center;gap:10px;padding:11px 14px;border-radius:var(--radius);margin-bottom:14px;font-size:12.5px;background:var(--brand-light);border:1px solid #C7D2FE;color:var(--brand)">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+            <span id="emailMethodText">Checking email configuration…</span>
+          </div>
+
+          <!-- Option 1: Resend (recommended for Railway) -->
+          <div class="card" style="margin-bottom:14px">
+            <div class="card-header" style="gap:8px">
+              <div style="display:flex;align-items:center;gap:8px;flex:1">
+                <span style="font-size:16px">🚀</span>
                 <div>
-                  <div style="font-size:14px;font-weight:600;color:var(--text-primary)">Gmail SMTP Configuration</div>
-                  <div style="font-size:12px;color:var(--text-muted);margin-top:2px">Approval emails are sent from this Gmail account</div>
+                  <div class="card-title">Resend API <span style="background:#10B981;color:#fff;font-size:9.5px;font-weight:700;padding:2px 7px;border-radius:4px;margin-left:4px;letter-spacing:.04em">RECOMMENDED FOR RAILWAY</span></div>
+                  <div style="font-size:11px;color:var(--text-muted);margin-top:1px">Works on Railway — no port restrictions. Free plan: 3,000 emails/month.</div>
                 </div>
-                <span class="cfg-badge no" id="emailCfgBadge">Not configured</span>
               </div>
-              <p style="font-size:13px;color:var(--text-secondary);margin-bottom:16px;line-height:1.6">
-                Requires a Gmail <a href="https://myaccount.google.com/apppasswords" target="_blank">App Password</a>
-                (16 characters). First enable <strong>2-Step Verification</strong> on your Google account, then generate an app password at the link above.
+              <span class="cfg-badge no" id="resendBadge">Not active</span>
+            </div>
+            <div class="card-body">
+              <div style="background:#F0FDF4;border:1px solid #A7F3D0;border-radius:var(--radius-sm);padding:11px 14px;margin-bottom:14px;font-size:12.5px;color:#065F46;line-height:1.7">
+                <strong>Setup (2 minutes):</strong><br>
+                1. Go to <a href="https://resend.com" target="_blank" style="color:#059669">resend.com</a> → Create free account<br>
+                2. Copy your <strong>API Key</strong> from the dashboard<br>
+                3. In Railway → your service → <strong>Variables</strong>, add:<br>
+                &nbsp;&nbsp;<code style="background:#D1FAE5;padding:1px 6px;border-radius:3px;font-size:11.5px">RESEND_API_KEY</code> = your key<br>
+                4. Optionally add <code style="background:#D1FAE5;padding:1px 6px;border-radius:3px;font-size:11.5px">RESEND_FROM</code> = <code style="background:#D1FAE5;padding:1px 6px;border-radius:3px;font-size:11.5px">CityKart &lt;noreply@yourdomain.com&gt;</code> (needs verified domain)<br>
+                5. Redeploy — email will work automatically.
+              </div>
+              <div id="resendStatusDetail" style="font-size:12px;color:var(--text-muted)"></div>
+            </div>
+          </div>
+
+          <!-- Option 2: Gmail SMTP (local dev) -->
+          <div class="card">
+            <div class="card-header">
+              <div style="display:flex;align-items:center;gap:8px;flex:1">
+                <span style="font-size:16px">📧</span>
+                <div>
+                  <div class="card-title">Gmail SMTP <span style="background:var(--warning);color:#fff;font-size:9.5px;font-weight:700;padding:2px 7px;border-radius:4px;margin-left:4px;letter-spacing:.04em">LOCAL / FALLBACK</span></div>
+                  <div style="font-size:11px;color:var(--text-muted);margin-top:1px">Works on your local machine. Railway blocks SMTP ports so this won't work when deployed.</div>
+                </div>
+              </div>
+              <span class="cfg-badge no" id="emailCfgBadge">Not configured</span>
+            </div>
+            <div class="card-body">
+              <p style="font-size:12.5px;color:var(--text-secondary);margin-bottom:14px;line-height:1.6">
+                Requires a Gmail <a href="https://myaccount.google.com/apppasswords" target="_blank">App Password</a> (16 characters, no spaces).
+                First enable <strong>2-Step Verification</strong> on your Google account, then generate an app password.
               </p>
               <div class="form-row">
                 <div class="fg">
@@ -1363,23 +1400,19 @@ tbody tr{transition:background .1s}
                 </div>
                 <div class="fg">
                   <label>App Password</label>
-                  <input type="password" id="cfgPwd" placeholder="xxxx xxxx xxxx xxxx">
+                  <input type="password" id="cfgPwd" placeholder="abcd efgh ijkl mnop">
                 </div>
               </div>
               <div class="fg">
-                <label>Server Base URL <span style="text-transform:none;font-weight:400;color:var(--text-muted)">(used in email approve/reject links)</span></label>
-                <input type="text" id="cfgUrl" placeholder="http://192.168.1.10:5000">
+                <label>Server Base URL <span style="text-transform:none;font-weight:400;color:var(--text-muted)">(for approve/reject links in emails)</span></label>
+                <input type="text" id="cfgUrl" placeholder="https://yourapp.up.railway.app">
                 <div id="serverIpHint" style="margin-top:6px;font-size:12px;color:var(--brand)"></div>
               </div>
-              <div class="cfg-notice">
-                <span>⚠️</span>
-                <span>The Base URL must be your machine's <strong>network IP address</strong>, not localhost — so approvers on other devices can click the email links and reach your server.</span>
-              </div>
-              <div style="margin-top:16px;display:flex;gap:8px">
+              <div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap;align-items:center">
                 <button class="btn btn-primary" onclick="saveEmailCfg()">Save Configuration</button>
                 <button class="btn btn-ghost" onclick="testEmailCfg()">Send Test Email</button>
+                <div id="emailCfgMsg" style="font-size:12.5px"></div>
               </div>
-              <div id="emailCfgMsg" style="margin-top:10px;font-size:13px"></div>
             </div>
           </div>
         </div>
@@ -2899,47 +2932,96 @@ async function clearAll() {
 // ── Email settings ────────────────────────────────────────────────────
 async function loadEmailCfg() {
   try {
-    const [cfgRes,ipRes] = await Promise.all([apiFetch('/api/email-config'),fetch('/api/server-info')]);
+    const [cfgRes, ipRes] = await Promise.all([
+      apiFetch('/api/email-config'),
+      fetch('/api/server-info')
+    ]);
     const cfg = await cfgRes.json();
     const ip  = await ipRes.json();
-    document.getElementById('cfgGmail').value = cfg.gmail||'';
-    const savedUrl = cfg.base_url||'';
-    const isLocal  = !savedUrl||savedUrl.includes('localhost')||savedUrl.includes('127.0.0.1');
-    document.getElementById('cfgUrl').value   = isLocal ? ip.url : savedUrl;
+
+    // Populate SMTP fields
+    document.getElementById('cfgGmail').value = cfg.gmail || '';
+    const savedUrl = cfg.base_url || '';
+    const isLocal  = !savedUrl || savedUrl.includes('localhost') || savedUrl.includes('127.0.0.1');
+    document.getElementById('cfgUrl').value = isLocal ? ip.url : savedUrl;
     document.getElementById('serverIpHint').innerHTML =
-      `🌐 Detected server IP: <strong>${ip.url}</strong>`;
-    const badge = document.getElementById('emailCfgBadge');
-    if (cfg.configured) { badge.textContent='✅ Configured'; badge.className='cfg-badge ok'; }
-    else                { badge.textContent='Not configured'; badge.className='cfg-badge no'; }
-  } catch(e){}
+      `🌐 Detected server: <strong>${ip.url}</strong>`;
+
+    // SMTP badge
+    const smtpBadge = document.getElementById('emailCfgBadge');
+    if (cfg.configured) { smtpBadge.textContent='✅ Configured'; smtpBadge.className='cfg-badge ok'; }
+    else                { smtpBadge.textContent='Not configured'; smtpBadge.className='cfg-badge no'; }
+
+    // Detect active method & update banner + Resend badge
+    const banner       = document.getElementById('emailMethodBanner');
+    const bannerText   = document.getElementById('emailMethodText');
+    const resendBadge  = document.getElementById('resendBadge');
+    const resendDetail = document.getElementById('resendStatusDetail');
+
+    // Ask backend which method is active via a lightweight check
+    // We infer from config: if RESEND_API_KEY is set the backend will use it
+    // We detect by checking if the test endpoint reveals it (no extra call needed —
+    // just use the configured state we already have)
+    const isRailway = savedUrl.includes('railway.app') || savedUrl.includes('up.railway.app');
+    const hasSmtp   = cfg.configured;
+
+    if (isRailway && !hasSmtp) {
+      // On Railway, no SMTP — likely using Resend or nothing
+      banner.style.background = '#FEF3C7'; banner.style.borderColor='#FCD34D'; banner.style.color='#92400E';
+      bannerText.textContent = '⚠️ Railway detected — Gmail SMTP is blocked on Railway. Add RESEND_API_KEY in Railway Variables to enable email.';
+      resendBadge.textContent='Check Railway Variables'; resendBadge.className='cfg-badge no';
+      resendDetail.innerHTML = 'Set <code style="background:var(--bg-alt);padding:1px 5px;border-radius:3px">RESEND_API_KEY</code> in Railway → Variables → Redeploy to activate.';
+    } else if (isRailway && hasSmtp) {
+      banner.style.background = '#FEF3C7'; banner.style.borderColor='#FCD34D'; banner.style.color='#92400E';
+      bannerText.textContent = '⚠️ Railway detected — Gmail SMTP credentials are saved but Railway blocks SMTP ports. Add RESEND_API_KEY instead.';
+      resendBadge.textContent='Not active'; resendBadge.className='cfg-badge no';
+    } else if (hasSmtp) {
+      banner.style.background = '#ECFDF5'; banner.style.borderColor='#A7F3D0'; banner.style.color='#065F46';
+      bannerText.textContent = '✅ Active method: Gmail SMTP — emails will be sent using the saved Gmail credentials.';
+      resendBadge.textContent='Not active'; resendBadge.className='cfg-badge no';
+    } else {
+      banner.style.background = '#FEF2F2'; banner.style.borderColor='#FECACA'; banner.style.color='#7F1D1D';
+      bannerText.textContent = '❌ No email method configured — approval emails will not be sent.';
+      resendBadge.textContent='Not active'; resendBadge.className='cfg-badge no';
+    }
+  } catch(e) {}
 }
 
 async function saveEmailCfg() {
-  const gmail=document.getElementById('cfgGmail').value.trim();
-  const pwd  =document.getElementById('cfgPwd').value.trim();
-  const url  =document.getElementById('cfgUrl').value.trim();
-  const msg  =document.getElementById('emailCfgMsg');
-  if (!gmail||!pwd) { msg.innerHTML='<span style="color:var(--danger)">Gmail and App Password are required.</span>'; return; }
-  msg.innerHTML='<span style="color:var(--text-muted)">Saving…</span>';
-  const res  = await apiFetch('/api/email-config',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({gmail,app_password:pwd,base_url:url})});
+  const gmail = document.getElementById('cfgGmail').value.trim();
+  const pwd   = document.getElementById('cfgPwd').value.trim();
+  const url   = document.getElementById('cfgUrl').value.trim();
+  const msg   = document.getElementById('emailCfgMsg');
+  if (!gmail || !pwd) {
+    msg.innerHTML = '<span style="color:var(--danger)">Gmail address and App Password are both required.</span>';
+    return;
+  }
+  msg.innerHTML = '<span style="color:var(--text-muted)">Saving…</span>';
+  const res  = await apiFetch('/api/email-config', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({gmail, app_password: pwd, base_url: url})
+  });
   const json = await res.json();
   if (json.success) {
-    msg.innerHTML=`<span style="color:var(--success)">✅ Saved. Email links will use: <strong>${json.base_url||url}</strong></span>`;
-    document.getElementById('cfgPwd').value='';
+    msg.innerHTML = `<span style="color:var(--success)">✅ Saved. Links will use: <strong>${json.base_url || url}</strong></span>`;
+    document.getElementById('cfgPwd').value = '';
     loadEmailCfg();
   } else {
-    msg.innerHTML=`<span style="color:var(--danger)">❌ ${json.error}</span>`;
+    msg.innerHTML = `<span style="color:var(--danger)">❌ ${json.error}</span>`;
   }
 }
 
 async function testEmailCfg() {
-  const msg=document.getElementById('emailCfgMsg');
-  msg.innerHTML='<span style="color:var(--text-muted)"><span class="spin-dark spin"></span> Sending test email…</span>';
-  const res  = await apiFetch('/api/email-config/test',{method:'POST'});
+  const msg = document.getElementById('emailCfgMsg');
+  msg.innerHTML = '<span style="color:var(--text-muted)"><span class="spin spin-dark"></span> Sending test email…</span>';
+  const res  = await apiFetch('/api/email-config/test', {method:'POST'});
   const json = await res.json();
-  msg.innerHTML = json.success
-    ? '<span style="color:var(--success)">✅ Test email sent! Check your inbox.</span>'
-    : `<span style="color:var(--danger)">❌ ${json.message}</span>`;
+  if (json.success) {
+    msg.innerHTML = `<span style="color:var(--success)">✅ Test email sent via ${json.method || 'email'}! Check your inbox.</span>`;
+  } else {
+    msg.innerHTML = `<span style="color:var(--danger)">❌ ${json.message}</span>`;
+  }
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────
