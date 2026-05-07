@@ -11,10 +11,28 @@ from functools import wraps
 
 from werkzeug.middleware.proxy_fix import ProxyFix
 
+# Optional: requests library for Resend API (added to requirements.txt)
+try:
+    import requests as _http_requests
+    _REQUESTS_AVAILABLE = True
+except ImportError:
+    _http_requests = None
+    _REQUESTS_AVAILABLE = False
+
 app = Flask(__name__, static_folder='.')
 
 # Trust Railway's reverse proxy (fixes https:// detection and correct IPs)
 app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=1)
+
+# Always return JSON on unhandled exceptions — prevents "Unexpected token '<'" in the frontend
+@app.errorhandler(Exception)
+def handle_exception(e):
+    import traceback
+    return jsonify({
+        'success': False,
+        'error':   str(e),
+        'trace':   traceback.format_exc()[-1000:]  # last 1000 chars of traceback
+    }), 500
 
 # Use a stable secret key from env — MUST be set in Railway env vars
 app.secret_key = os.environ.get('SECRET_KEY', secrets.token_hex(32))
@@ -1206,32 +1224,46 @@ def _build_email_html(change_req, approve_url, reject_url):
 </div></body></html>"""
 
 
-def _send_via_resend(to_email, from_label, subject, html_body):
+def _send_via_resend(to_email, reply_to_email, subject, html_body):
     """Send using the Resend API (https://resend.com).
-    Requires RESEND_API_KEY env var and a verified sender domain."""
-    import requests as _req
+    Requires RESEND_API_KEY env var. Free plan: 3,000 emails/month.
+    Works on Railway — no SMTP port restrictions."""
+    if not _REQUESTS_AVAILABLE:
+        return False, 'requests library not installed — run: pip install requests'
+
     api_key = os.environ.get('RESEND_API_KEY', '').strip()
     if not api_key:
-        return False, 'RESEND_API_KEY not set'
-    # Sender: use the verified domain set in RESEND_FROM, default to onboarding address
-    from_addr = os.environ.get('RESEND_FROM', 'Visit Plan System <onboarding@resend.dev>')
+        return False, 'RESEND_API_KEY env var not set'
+
+    # Sender address — needs a verified domain in Resend, or use onboarding@resend.dev (test only)
+    from_addr = os.environ.get('RESEND_FROM', 'Visit Plan System <onboarding@resend.dev>').strip()
+
     payload = {
-        'from':    from_addr,
-        'to':      [to_email],
-        'subject': subject,
-        'html':    html_body,
-        'reply_to': from_label,
+        'from':     from_addr,
+        'to':       [to_email],
+        'subject':  subject,
+        'html':     html_body,
     }
+    # Only add reply_to if it looks like a real email
+    if reply_to_email and '@' in reply_to_email:
+        payload['reply_to'] = reply_to_email
+
     try:
-        resp = _req.post(
+        resp = _http_requests.post(
             'https://api.resend.com/emails',
-            headers={'Authorization': f'Bearer {api_key}', 'Content-Type': 'application/json'},
+            headers={
+                'Authorization':  f'Bearer {api_key}',
+                'Content-Type':   'application/json',
+            },
             json=payload,
-            timeout=15
+            timeout=20,
         )
+        data = resp.json() if resp.content else {}
         if resp.status_code in (200, 201):
-            return True, f'Email sent via Resend (id={resp.json().get("id","")})'
-        return False, f'Resend API error {resp.status_code}: {resp.text}'
+            return True, f'Email sent via Resend (id={data.get("id", "—")})'
+        # Surface the actual Resend error message
+        err = data.get('message') or data.get('error') or resp.text
+        return False, f'Resend error {resp.status_code}: {err}'
     except Exception as e:
         return False, f'Resend request failed: {e}'
 
