@@ -9,102 +9,117 @@
 <style>
 /* ─── Base ─────────────────────────────────────────────────────────── */
 :root {
-  --brand:        #4F46E5;
-  --brand-dark:   #3730A3;
-  --brand-light:  #EEF2FF;
-  --brand-mid:    #6366F1;
-  --success:      #059669;
-  --success-bg:   #ECFDF5;
-  --danger:       #DC2626;
-  --danger-bg:    #FEF2F2;
-  --warning:      #D97706;
-  --warning-bg:   #FFFBEB;
-  --text-primary: #111827;
-  --text-secondary:#6B7280;
-  --text-muted:   #9CA3AF;
-  --border:       #E5E7EB;
-  --border-strong:#D1D5DB;
-  --surface:      #FFFFFF;
-  --bg:           #F9FAFB;
-  --bg-alt:       #F3F4F6;
-  --radius-sm:    6px;
-  --radius:       10px;
-  --radius-lg:    16px;
-  --shadow-sm:    0 1px 3px rgba(0,0,0,.08),0 1px 2px rgba(0,0,0,.05);
-  --shadow:       0 4px 16px rgba(0,0,0,.07),0 1px 4px rgba(0,0,0,.04);
-  --shadow-lg:    0 20px 48px rgba(0,0,0,.14),0 4px 16px rgba(0,0,0,.06);
+  --brand:         #4F46E5;
+  --brand-dark:    #3730A3;
+  --brand-light:   #EEF2FF;
+  --brand-mid:     #6366F1;
+  --success:       #059669;
+  --success-bg:    #ECFDF5;
+  --danger:        #DC2626;
+  --danger-bg:     #FEF2F2;
+  --warning:       #D97706;
+  --warning-bg:    #FFFBEB;
+  --text-primary:  #0F172A;
+  --text-secondary:#475569;
+  --text-muted:    #94A3B8;
+  --border:        #E2E8F0;
+  --border-strong: #CBD5E1;
+  --surface:       #FFFFFF;
+  --bg:            #F8FAFC;
+  --bg-alt:        #F1F5F9;
+  --radius-sm:     6px;
+  --radius:        10px;
+  --radius-lg:     16px;
+  --shadow-sm:     0 1px 2px rgba(0,0,0,.06),0 1px 3px rgba(0,0,0,.04);
+  --shadow:        0 4px 12px rgba(0,0,0,.06),0 1px 4px rgba(0,0,0,.04);
+  --shadow-lg:     0 16px 40px rgba(0,0,0,.12),0 4px 12px rgba(0,0,0,.06);
+  /* sidebar dark theme */
+  --sb-bg:         #1E1B4B;
+  --sb-bg-mid:     #2D2A6E;
+  --sb-border:     rgba(255,255,255,.07);
+  --sb-text:       rgba(255,255,255,.65);
+  --sb-text-act:   #FFFFFF;
+  --sb-hover:      rgba(255,255,255,.08);
+  --sb-active:     rgba(255,255,255,.12);
 }
 *{margin:0;padding:0;box-sizing:border-box}
-html{-webkit-font-smoothing:antialiased}
+html{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
 body{
   font-family:'Inter',system-ui,sans-serif;
-  font-size:14px;
+  font-size:12.5px;
   background:var(--bg);
   color:var(--text-primary);
   min-height:100vh;
-  line-height:1.5;
+  line-height:1.4;
 }
 a{color:var(--brand);text-decoration:none}
 a:hover{text-decoration:underline}
 
 /* ─── Scrollbar ──────────────────────────────────────────────────── */
-::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar{width:5px;height:5px}
 ::-webkit-scrollbar-track{background:transparent}
-::-webkit-scrollbar-thumb{background:#D1D5DB;border-radius:3px}
+::-webkit-scrollbar-thumb{background:#CBD5E1;border-radius:10px}
+::-webkit-scrollbar-thumb:hover{background:#94A3B8}
 
 /* ─── Login ──────────────────────────────────────────────────────── */
 #loginPage{
   display:flex;align-items:center;justify-content:center;
   min-height:100vh;padding:24px;
-  background:linear-gradient(135deg,#EEF2FF 0%,#F5F3FF 50%,#FDF4FF 100%);
+  background:linear-gradient(135deg,#1E1B4B 0%,#312E81 40%,#4338CA 100%);
 }
-.login-wrap{width:100%;max-width:400px}
+.login-wrap{width:100%;max-width:380px}
 .login-logo-ring{
-  width:64px;height:64px;border-radius:18px;
-  background:linear-gradient(135deg,var(--brand),var(--brand-mid));
+  width:56px;height:56px;border-radius:16px;
+  background:rgba(255,255,255,.15);
+  backdrop-filter:blur(8px);
+  border:1px solid rgba(255,255,255,.25);
   display:flex;align-items:center;justify-content:center;
-  font-size:28px;margin:0 auto 20px;
-  box-shadow:0 8px 24px rgba(79,70,229,.3);
+  font-size:24px;margin:0 auto 18px;
+  box-shadow:0 8px 32px rgba(0,0,0,.3);
 }
 .login-card{
-  background:var(--surface);border-radius:var(--radius-lg);
-  padding:36px 32px;box-shadow:var(--shadow-lg);
-  border:1px solid rgba(255,255,255,.8);
+  background:rgba(255,255,255,.97);border-radius:var(--radius-lg);
+  padding:30px 28px;
+  box-shadow:0 24px 64px rgba(0,0,0,.25);
+  border:1px solid rgba(255,255,255,.6);
 }
-.login-heading{font-size:22px;font-weight:700;color:var(--text-primary);text-align:center;margin-bottom:4px}
-.login-sub{font-size:13px;color:var(--text-secondary);text-align:center;margin-bottom:28px}
-.login-label{display:block;font-size:12px;font-weight:600;color:var(--text-secondary);
-             text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+.login-heading{font-size:18px;font-weight:700;color:var(--text-primary);text-align:center;margin-bottom:2px}
+.login-sub{font-size:12px;color:var(--text-secondary);text-align:center;margin-bottom:22px}
+.login-label{display:block;font-size:11px;font-weight:600;color:var(--text-secondary);
+             text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px}
 .login-input{
-  width:100%;padding:11px 14px;border:1.5px solid var(--border-strong);
-  border-radius:var(--radius);font-size:14px;font-family:inherit;
-  color:var(--text-primary);background:var(--bg);
+  width:100%;padding:9px 12px;
+  border:1.5px solid var(--border-strong);
+  border-radius:var(--radius);font-size:13px;font-family:inherit;
+  color:var(--text-primary);background:#fff;
   transition:border-color .15s,box-shadow .15s;
 }
 .login-input:focus{outline:none;border-color:var(--brand);
-  box-shadow:0 0 0 3px rgba(79,70,229,.12);background:#fff}
+  box-shadow:0 0 0 3px rgba(79,70,229,.12)}
 .login-input::placeholder{color:var(--text-muted)}
 .login-btn{
-  width:100%;margin-top:16px;padding:12px;
-  background:linear-gradient(135deg,var(--brand),var(--brand-mid));
+  width:100%;margin-top:14px;padding:11px;
+  background:linear-gradient(135deg,#4F46E5,#6366F1);
   color:#fff;border:none;border-radius:var(--radius);
-  font-size:14px;font-weight:600;font-family:inherit;
-  cursor:pointer;transition:all .2s;letter-spacing:.01em;
+  font-size:13px;font-weight:600;font-family:inherit;
+  cursor:pointer;transition:all .2s;letter-spacing:.02em;
+  box-shadow:0 4px 14px rgba(79,70,229,.35);
 }
-.login-btn:hover{transform:translateY(-1px);box-shadow:0 8px 20px rgba(79,70,229,.35)}
+.login-btn:hover{transform:translateY(-1px);box-shadow:0 8px 22px rgba(79,70,229,.45)}
+.login-btn:active{transform:translateY(0)}
 .login-btn:disabled{opacity:.6;cursor:not-allowed;transform:none;box-shadow:none}
-.login-divider{display:flex;align-items:center;gap:10px;margin:20px 0}
+.login-divider{display:flex;align-items:center;gap:10px;margin:18px 0}
 .login-divider hr{flex:1;border:none;border-top:1px solid var(--border)}
-.login-divider span{font-size:12px;color:var(--text-muted);white-space:nowrap}
-.login-hint-row{display:flex;gap:8px;padding:10px 12px;border-radius:var(--radius-sm);
-                background:var(--bg-alt);border:1px solid var(--border);margin-bottom:8px}
+.login-divider span{font-size:11px;color:var(--text-muted);white-space:nowrap}
+.login-hint-row{display:flex;gap:8px;padding:9px 11px;border-radius:var(--radius-sm);
+                background:var(--bg);border:1px solid var(--border);margin-bottom:7px}
 .login-hint-row:last-child{margin-bottom:0}
-.hint-icon{font-size:16px;flex-shrink:0}
-.hint-text{font-size:12px;color:var(--text-secondary);line-height:1.5}
+.hint-icon{font-size:15px;flex-shrink:0}
+.hint-text{font-size:11.5px;color:var(--text-secondary);line-height:1.5}
 .hint-text strong{color:var(--text-primary)}
 .login-err{
-  background:var(--danger-bg);color:var(--danger);padding:10px 12px;
-  border-radius:var(--radius-sm);font-size:13px;margin-bottom:14px;
+  background:var(--danger-bg);color:var(--danger);padding:9px 12px;
+  border-radius:var(--radius-sm);font-size:12px;margin-bottom:14px;
   border:1px solid #FECACA;display:none;align-items:center;gap:8px;
 }
 
@@ -112,162 +127,224 @@ a:hover{text-decoration:underline}
 #mainApp{display:none}
 .app-layout{display:flex;min-height:100vh}
 
-/* Sidebar */
+/* ─── Sidebar (dark) ─────────────────────────────────────────────── */
 .sidebar{
-  width:240px;flex-shrink:0;
-  background:var(--surface);border-right:1px solid var(--border);
+  width:216px;flex-shrink:0;
+  background:var(--sb-bg);
   display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;
   z-index:100;
   transition:transform .22s cubic-bezier(.4,0,.2,1);
+  box-shadow:2px 0 12px rgba(0,0,0,.2);
 }
-.sidebar.collapsed{transform:translateX(-240px)}
+.sidebar.collapsed{transform:translateX(-216px)}
 .main-content{transition:margin-left .22s cubic-bezier(.4,0,.2,1)}
+
 .sidebar-brand{
-  padding:20px 20px 16px;
-  border-bottom:1px solid var(--border);
+  padding:15px 16px 13px;
+  border-bottom:1px solid var(--sb-border);
+  background:rgba(0,0,0,.15);
 }
-.brand-logo{
-  display:flex;align-items:center;gap:10px;
-}
+.brand-logo{display:flex;align-items:center;gap:9px}
 .brand-icon{
-  width:36px;height:36px;border-radius:10px;
-  background:linear-gradient(135deg,var(--brand),var(--brand-mid));
+  width:30px;height:30px;border-radius:8px;
+  background:linear-gradient(135deg,#818CF8,#6366F1);
   display:flex;align-items:center;justify-content:center;
-  font-size:16px;flex-shrink:0;
+  font-size:13px;flex-shrink:0;
+  box-shadow:0 2px 8px rgba(99,102,241,.4);
 }
-.brand-name{font-size:15px;font-weight:700;color:var(--text-primary)}
-.brand-tagline{font-size:11px;color:var(--text-muted);margin-top:1px}
+.brand-name{font-size:13px;font-weight:700;color:#fff;letter-spacing:.01em}
+.brand-tagline{font-size:9.5px;color:rgba(255,255,255,.45);margin-top:1px}
 
 .sidebar-user{
-  margin:12px;padding:10px 12px;
-  background:var(--bg);border-radius:var(--radius);
-  border:1px solid var(--border);
-  display:flex;align-items:center;gap:10px;
+  margin:10px 10px 4px;padding:9px 11px;
+  background:rgba(255,255,255,.07);
+  border-radius:var(--radius-sm);
+  border:1px solid var(--sb-border);
+  display:flex;align-items:center;gap:9px;
 }
 .user-ava{
-  width:32px;height:32px;border-radius:50%;
-  background:linear-gradient(135deg,var(--brand),var(--brand-mid));
+  width:28px;height:28px;border-radius:50%;
+  background:linear-gradient(135deg,#818CF8,#6366F1);
   display:flex;align-items:center;justify-content:center;
-  color:#fff;font-weight:700;font-size:13px;flex-shrink:0;
+  color:#fff;font-weight:700;font-size:11px;flex-shrink:0;
+  box-shadow:0 2px 6px rgba(0,0,0,.25);
 }
 .user-info{flex:1;min-width:0}
-.user-name{font-size:13px;font-weight:600;color:var(--text-primary);
+.user-name{font-size:12px;font-weight:600;color:#fff;
            white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.user-role{font-size:11px;color:var(--text-muted)}
+.user-role{font-size:10px;color:rgba(255,255,255,.45)}
 .admin-chip{
-  display:inline-block;background:linear-gradient(135deg,#F59E0B,#EF4444);
-  color:#fff;font-size:9px;font-weight:700;padding:1px 6px;
+  display:inline-block;background:linear-gradient(135deg,#F59E0B,#F97316);
+  color:#fff;font-size:8.5px;font-weight:700;padding:1px 6px;
   border-radius:4px;text-transform:uppercase;letter-spacing:.06em;margin-left:4px;
 }
 
-.sidebar-nav{flex:1;padding:8px;overflow-y:auto}
+.sidebar-nav{flex:1;padding:8px 8px 4px;overflow-y:auto}
 .nav-section-label{
-  font-size:10px;font-weight:700;color:var(--text-muted);
-  text-transform:uppercase;letter-spacing:.08em;
-  padding:12px 8px 6px;
+  font-size:9px;font-weight:700;color:rgba(255,255,255,.3);
+  text-transform:uppercase;letter-spacing:.1em;
+  padding:10px 8px 4px;
 }
 .nav-item{
-  display:flex;align-items:center;gap:10px;padding:9px 10px;
+  display:flex;align-items:center;gap:9px;padding:7px 9px;
   border-radius:var(--radius-sm);cursor:pointer;
-  font-size:13px;font-weight:500;color:var(--text-secondary);
+  font-size:12px;font-weight:500;color:var(--sb-text);
   transition:all .15s;margin-bottom:1px;border:none;
   background:none;width:100%;text-align:left;font-family:inherit;
 }
-.nav-item:hover{background:var(--bg-alt);color:var(--text-primary)}
-.nav-item.active{background:var(--brand-light);color:var(--brand);font-weight:600}
-.nav-item.active .nav-icon{color:var(--brand)}
-.nav-icon{font-size:15px;width:20px;text-align:center;flex-shrink:0}
+.nav-item:hover{background:var(--sb-hover);color:var(--sb-text-act)}
+.nav-item.active{
+  background:rgba(99,102,241,.25);
+  color:#fff;font-weight:600;
+  border-left:2px solid #818CF8;
+  padding-left:7px;
+}
+.nav-icon{font-size:13px;width:17px;text-align:center;flex-shrink:0;opacity:.8}
+.nav-item.active .nav-icon{opacity:1}
 .nav-badge{
-  margin-left:auto;background:var(--danger);color:#fff;
-  font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px;min-width:20px;
+  margin-left:auto;background:#EF4444;color:#fff;
+  font-size:9.5px;font-weight:700;padding:1px 6px;border-radius:10px;min-width:18px;
   text-align:center;display:none;
 }
 .nav-badge.show{display:block}
 
 .sidebar-footer{
-  padding:12px;border-top:1px solid var(--border);
+  padding:8px;border-top:1px solid var(--sb-border);
+  background:rgba(0,0,0,.1);
 }
 .sidebar-status{
-  display:flex;align-items:center;gap:7px;padding:8px 10px;
-  border-radius:var(--radius-sm);background:var(--bg);
-  border:1px solid var(--border);margin-bottom:8px;
+  display:flex;align-items:center;gap:6px;padding:6px 8px;
+  border-radius:var(--radius-sm);
+  background:rgba(255,255,255,.05);
+  border:1px solid var(--sb-border);margin-bottom:6px;
 }
-.status-dot{width:7px;height:7px;border-radius:50%;background:#F59E0B;flex-shrink:0}
+.status-dot{width:6px;height:6px;border-radius:50%;background:#F59E0B;flex-shrink:0}
 .status-dot.online{background:#10B981}.status-dot.offline{background:#EF4444}
-.status-text{font-size:11px;color:var(--text-secondary)}
+.status-text{font-size:10px;color:rgba(255,255,255,.45)}
 .btn-logout{
-  width:100%;padding:8px;background:var(--bg);border:1px solid var(--border);
-  border-radius:var(--radius-sm);font-size:13px;font-weight:500;
-  color:var(--text-secondary);cursor:pointer;transition:all .15s;font-family:inherit;
+  width:100%;padding:7px;
+  background:rgba(255,255,255,.06);
+  border:1px solid var(--sb-border);
+  border-radius:var(--radius-sm);font-size:11.5px;font-weight:500;
+  color:rgba(255,255,255,.55);cursor:pointer;transition:all .15s;font-family:inherit;
   display:flex;align-items:center;justify-content:center;gap:6px;
 }
-.btn-logout:hover{background:var(--danger-bg);border-color:#FECACA;color:var(--danger)}
+.btn-logout:hover{background:rgba(239,68,68,.2);border-color:rgba(239,68,68,.4);color:#FCA5A5}
 
-/* Main content */
+/* ─── Main content ───────────────────────────────────────────────── */
 .main-content{
-  margin-left:240px;flex:1;display:flex;flex-direction:column;min-height:100vh;
+  margin-left:216px;flex:1;display:flex;flex-direction:column;min-height:100vh;
 }
 .topbar{
-  background:var(--surface);border-bottom:1px solid var(--border);
-  padding:0 28px;height:56px;display:flex;align-items:center;
-  justify-content:space-between;position:sticky;top:0;z-index:50;
+  background:var(--surface);
+  border-bottom:1px solid var(--border);
+  padding:0 22px;height:48px;
+  display:flex;align-items:center;justify-content:space-between;
+  position:sticky;top:0;z-index:50;
+  box-shadow:0 1px 4px rgba(0,0,0,.04);
 }
-.topbar-title{font-size:16px;font-weight:600;color:var(--text-primary)}
-.topbar-sub{font-size:12px;color:var(--text-muted);margin-top:1px}
-.topbar-right{display:flex;align-items:center;gap:8px}
+.topbar-left{display:flex;align-items:center;gap:12px}
+.topbar-title{font-size:14px;font-weight:700;color:var(--text-primary);letter-spacing:-.02em}
+.topbar-sub{font-size:11px;color:var(--text-muted);margin-top:1px}
+.topbar-divider{width:1px;height:20px;background:var(--border)}
+.topbar-right{display:flex;align-items:center;gap:6px}
 .btn-icon{
-  width:34px;height:34px;border-radius:var(--radius-sm);
+  width:30px;height:30px;border-radius:var(--radius-sm);
   border:1px solid var(--border);background:var(--surface);
   display:flex;align-items:center;justify-content:center;
-  cursor:pointer;transition:all .15s;font-size:15px;color:var(--text-secondary);
+  cursor:pointer;transition:all .15s;font-size:13px;color:var(--text-secondary);
 }
 .btn-icon:hover{background:var(--bg-alt);border-color:var(--border-strong);color:var(--text-primary)}
-.page-body{padding:24px 28px;flex:1}
+.page-body{padding:18px 22px;flex:1}
 
 /* ─── Stats cards ────────────────────────────────────────────────── */
 .stats-grid{
-  display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px;
+  display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px;
 }
 .stat-card{
   background:var(--surface);border-radius:var(--radius);
-  padding:18px 20px;border:1px solid var(--border);
-  box-shadow:var(--shadow-sm);display:flex;align-items:center;gap:14px;
+  padding:0;border:1px solid var(--border);
+  box-shadow:var(--shadow-sm);
+  display:flex;flex-direction:column;
+  transition:box-shadow .2s,transform .2s;
+  position:relative;overflow:hidden;cursor:default;
 }
-.stat-icon{
-  width:44px;height:44px;border-radius:var(--radius-sm);
-  display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;
+.stat-card:hover{box-shadow:0 8px 24px rgba(0,0,0,.09);transform:translateY(-2px)}
+/* coloured left accent stripe */
+.stat-card::after{
+  content:'';position:absolute;left:0;top:0;bottom:0;width:4px;border-radius:4px 0 0 4px;
 }
-.stat-icon.total {background:#EEF2FF}
-.stat-icon.approved{background:#ECFDF5}
-.stat-icon.rejected{background:#FEF2F2}
-.stat-icon.pending{background:#FFFBEB}
-.stat-body{}
-.stat-val{font-size:26px;font-weight:700;color:var(--text-primary);line-height:1}
-.stat-lbl{font-size:12px;color:var(--text-muted);margin-top:3px;font-weight:500}
+.stat-card:nth-child(1)::after{background:linear-gradient(180deg,#6366F1,#818CF8)}
+.stat-card:nth-child(2)::after{background:linear-gradient(180deg,#059669,#34D399)}
+.stat-card:nth-child(3)::after{background:linear-gradient(180deg,#DC2626,#F87171)}
+.stat-card:nth-child(4)::after{background:linear-gradient(180deg,#D97706,#FCD34D)}
+
+.stat-card-inner{
+  display:flex;align-items:flex-start;gap:12px;
+  padding:14px 14px 10px 18px;flex:1;
+}
+.stat-icon-wrap{
+  width:42px;height:42px;border-radius:10px;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+  position:relative;
+}
+.stat-icon-wrap svg{width:20px;height:20px}
+.stat-icon-wrap.c-indigo{background:linear-gradient(135deg,#6366F1,#818CF8);
+  box-shadow:0 4px 12px rgba(99,102,241,.35)}
+.stat-icon-wrap.c-green{background:linear-gradient(135deg,#059669,#34D399);
+  box-shadow:0 4px 12px rgba(5,150,105,.3)}
+.stat-icon-wrap.c-red{background:linear-gradient(135deg,#DC2626,#EF4444);
+  box-shadow:0 4px 12px rgba(220,38,38,.3)}
+.stat-icon-wrap.c-amber{background:linear-gradient(135deg,#D97706,#F59E0B);
+  box-shadow:0 4px 12px rgba(217,119,6,.3)}
+
+.stat-data{flex:1;min-width:0}
+.stat-val{
+  font-size:26px;font-weight:800;color:var(--text-primary);
+  line-height:1;letter-spacing:-.03em;font-variant-numeric:tabular-nums;
+}
+.stat-lbl{font-size:11.5px;color:var(--text-secondary);margin-top:4px;font-weight:500}
+.stat-sub{font-size:10px;color:var(--text-muted);margin-top:2px}
+
+/* progress bar strip at bottom of card */
+.stat-bar-wrap{
+  padding:0 14px 10px 18px;
+}
+.stat-bar-track{
+  height:3px;border-radius:4px;background:var(--bg-alt);overflow:hidden;
+}
+.stat-bar-fill{height:100%;border-radius:4px;transition:width .6s cubic-bezier(.4,0,.2,1)}
+.stat-card:nth-child(1) .stat-bar-fill{background:linear-gradient(90deg,#6366F1,#818CF8)}
+.stat-card:nth-child(2) .stat-bar-fill{background:linear-gradient(90deg,#059669,#34D399)}
+.stat-card:nth-child(3) .stat-bar-fill{background:linear-gradient(90deg,#DC2626,#F87171)}
+.stat-card:nth-child(4) .stat-bar-fill{background:linear-gradient(90deg,#D97706,#FCD34D)}
 
 /* ─── Section header ──────────────────────────────────────────────── */
 .section-hd{
   display:flex;align-items:center;justify-content:space-between;
-  margin-bottom:16px;
+  margin-bottom:12px;gap:12px;
 }
-.section-title{font-size:15px;font-weight:600;color:var(--text-primary)}
-.section-sub{font-size:12px;color:var(--text-muted);margin-top:1px}
+.section-hd-left{display:flex;flex-direction:column;gap:1px}
+.section-title{font-size:13.5px;font-weight:700;color:var(--text-primary);letter-spacing:-.01em}
+.section-sub{font-size:11px;color:var(--text-muted)}
 
 /* ─── Card ────────────────────────────────────────────────────────── */
 .card{
   background:var(--surface);border-radius:var(--radius);
-  border:1px solid var(--border);box-shadow:var(--shadow-sm);
-  margin-bottom:20px;
+  border:1px solid var(--border);
+  box-shadow:0 1px 3px rgba(0,0,0,.05);
+  margin-bottom:14px;
 }
 .card-header{
-  padding:16px 20px;border-bottom:1px solid var(--border);
-  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  padding:11px 15px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+  background:var(--bg);border-radius:var(--radius) var(--radius) 0 0;
 }
-.card-title{font-size:14px;font-weight:600;color:var(--text-primary)}
-.card-body{padding:20px}
-.card-body.compact{padding:16px}
+.card-title{font-size:12.5px;font-weight:600;color:var(--text-primary)}
+.card-body{padding:14px 15px}
+.card-body.compact{padding:11px 12px}
 .card-footer{
-  padding:12px 20px;border-top:1px solid var(--border);
+  padding:9px 15px;border-top:1px solid var(--border);
   background:var(--bg);border-radius:0 0 var(--radius) var(--radius);
   display:flex;align-items:center;gap:8px;
 }
@@ -275,81 +352,88 @@ a:hover{text-decoration:underline}
 /* ─── Info strip ─────────────────────────────────────────────────── */
 .info-strip{
   display:flex;flex-wrap:wrap;gap:0;
-  border-radius:var(--radius-sm);overflow:hidden;border:1px solid var(--border);
-  margin-bottom:16px;
+  border-radius:var(--radius-sm);overflow:hidden;
+  border:1px solid var(--border);margin-bottom:12px;
+  background:var(--surface);
 }
 .info-item{
-  flex:1;min-width:140px;padding:10px 14px;
+  flex:1;min-width:120px;padding:8px 12px;
   border-right:1px solid var(--border);
 }
 .info-item:last-child{border-right:none}
-.info-lbl{font-size:11px;color:var(--text-muted);font-weight:600;
-          text-transform:uppercase;letter-spacing:.05em;margin-bottom:2px}
-.info-val{font-size:13px;color:var(--text-primary);font-weight:500;
+.info-lbl{font-size:10px;color:var(--text-muted);font-weight:600;
+          text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px}
+.info-val{font-size:12px;color:var(--text-primary);font-weight:600;
           white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 
 /* ─── Form ────────────────────────────────────────────────────────── */
-.form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-.fg{margin-bottom:14px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+.fg{margin-bottom:11px}
 .fg:last-child{margin-bottom:0}
 .fg label{
-  display:block;font-size:12px;font-weight:600;color:var(--text-secondary);
-  text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px;
+  display:block;font-size:11px;font-weight:600;color:var(--text-secondary);
+  text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px;
 }
 .fg select,.fg input,.fg textarea{
-  width:100%;padding:9px 12px;
+  width:100%;padding:7px 10px;
   border:1.5px solid var(--border-strong);border-radius:var(--radius-sm);
-  font-size:13px;font-family:inherit;color:var(--text-primary);
-  background:var(--bg);transition:border-color .15s,box-shadow .15s;
+  font-size:12px;font-family:inherit;color:var(--text-primary);
+  background:#fff;transition:border-color .15s,box-shadow .15s;
 }
 .fg select:focus,.fg input:focus,.fg textarea:focus{
   outline:none;border-color:var(--brand);
-  box-shadow:0 0 0 3px rgba(79,70,229,.1);background:#fff;
+  box-shadow:0 0 0 3px rgba(79,70,229,.1);
 }
 .fg select::placeholder,.fg input::placeholder,.fg textarea::placeholder{color:var(--text-muted)}
 .fg textarea{resize:vertical;min-height:80px;line-height:1.5}
 
 /* ─── Buttons ─────────────────────────────────────────────────────── */
 .btn{
-  display:inline-flex;align-items:center;gap:6px;
-  padding:8px 16px;border-radius:var(--radius-sm);
-  font-size:13px;font-weight:600;font-family:inherit;
+  display:inline-flex;align-items:center;gap:5px;
+  padding:6px 14px;border-radius:var(--radius-sm);
+  font-size:12px;font-weight:600;font-family:inherit;
   cursor:pointer;transition:all .15s;border:1.5px solid transparent;
-  line-height:1;
+  line-height:1;letter-spacing:.01em;
 }
 .btn-primary{
-  background:var(--brand);color:#fff;border-color:var(--brand);
+  background:linear-gradient(135deg,var(--brand),var(--brand-mid));
+  color:#fff;border-color:var(--brand);
+  box-shadow:0 2px 6px rgba(79,70,229,.25);
 }
-.btn-primary:hover{background:var(--brand-dark);border-color:var(--brand-dark);
-  box-shadow:0 4px 12px rgba(79,70,229,.25)}
-.btn-primary:disabled{opacity:.55;cursor:not-allowed;box-shadow:none}
-.btn-success{background:var(--success);color:#fff;border-color:var(--success)}
-.btn-success:hover{background:#047857;box-shadow:0 4px 12px rgba(5,150,105,.25)}
-.btn-danger{background:var(--danger);color:#fff;border-color:var(--danger)}
-.btn-danger:hover{background:#B91C1C;box-shadow:0 4px 12px rgba(220,38,38,.25)}
+.btn-primary:hover{background:linear-gradient(135deg,var(--brand-dark),var(--brand));
+  box-shadow:0 4px 12px rgba(79,70,229,.35);transform:translateY(-1px)}
+.btn-primary:active{transform:translateY(0)}
+.btn-primary:disabled{opacity:.55;cursor:not-allowed;box-shadow:none;transform:none}
+.btn-success{background:var(--success);color:#fff;border-color:var(--success);
+  box-shadow:0 2px 6px rgba(5,150,105,.2)}
+.btn-success:hover{background:#047857;box-shadow:0 4px 10px rgba(5,150,105,.3)}
+.btn-danger{background:var(--danger);color:#fff;border-color:var(--danger);
+  box-shadow:0 2px 6px rgba(220,38,38,.2)}
+.btn-danger:hover{background:#B91C1C;box-shadow:0 4px 10px rgba(220,38,38,.3)}
 .btn-ghost{
-  background:transparent;color:var(--text-secondary);
+  background:#fff;color:var(--text-secondary);
   border-color:var(--border-strong);
 }
-.btn-ghost:hover{background:var(--bg-alt);color:var(--text-primary)}
-.btn-sm{padding:6px 12px;font-size:12px}
-.btn-xs{padding:4px 9px;font-size:11px;border-radius:4px}
+.btn-ghost:hover{background:var(--bg-alt);color:var(--text-primary);border-color:var(--border-strong)}
+.btn-sm{padding:4px 10px;font-size:11px}
+.btn-xs{padding:3px 7px;font-size:10px;border-radius:4px}
 .btn-block{width:100%;justify-content:center}
 
 /* ─── Table ───────────────────────────────────────────────────────── */
 .tbl-wrap{overflow-x:auto;overflow-y:auto;max-height:72vh}
-table{width:100%;border-collapse:collapse;font-size:13px}
-thead tr{background:var(--bg)}
+table{width:100%;border-collapse:collapse;font-size:12px}
+thead tr{background:var(--bg-alt)}
 th{
-  padding:10px 14px;text-align:left;font-size:11px;font-weight:700;
-  color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;
-  border-bottom:1px solid var(--border);white-space:nowrap;
-  position:sticky;top:0;background:var(--bg);z-index:2;
-  box-shadow:0 1px 0 var(--border);
+  padding:8px 12px;text-align:left;font-size:10px;font-weight:700;
+  color:var(--text-secondary);text-transform:uppercase;letter-spacing:.07em;
+  border-bottom:2px solid var(--border);white-space:nowrap;
+  position:sticky;top:0;background:var(--bg-alt);z-index:2;
 }
-td{padding:12px 14px;border-bottom:1px solid var(--border);color:var(--text-primary)}
+td{padding:8px 12px;border-bottom:1px solid var(--border);color:var(--text-primary);
+   vertical-align:middle}
 tbody tr:last-child td{border-bottom:none}
-tbody tr:hover td{background:var(--bg)}
+tbody tr:hover td{background:#F8FAFC}
+tbody tr{transition:background .1s}
 
 /* ─── Badges ──────────────────────────────────────────────────────── */
 .badge{
@@ -365,106 +449,108 @@ tbody tr:hover td{background:var(--bg)}
 
 /* ─── Request cards ───────────────────────────────────────────────── */
 .req-card{
-  border:1px solid var(--border);border-radius:var(--radius-sm);
-  padding:14px 16px;margin-bottom:10px;background:var(--surface);
-  transition:box-shadow .15s;
+  border:1px solid var(--border);border-radius:var(--radius);
+  padding:12px 14px;margin-bottom:8px;background:var(--surface);
+  transition:box-shadow .15s,transform .1s;
 }
-.req-card:hover{box-shadow:var(--shadow-sm)}
+.req-card:hover{box-shadow:var(--shadow);transform:translateY(-1px)}
 .req-card:last-child{margin-bottom:0}
-.req-card-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px}
-.req-card-title{font-size:13px;font-weight:600;color:var(--text-primary)}
-.req-card-meta{font-size:12px;color:var(--text-secondary);margin-top:4px;line-height:1.5}
+.req-card-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:5px}
+.req-card-title{font-size:12.5px;font-weight:600;color:var(--text-primary)}
+.req-card-meta{font-size:11px;color:var(--text-secondary);margin-top:3px;line-height:1.5}
 .req-card-actions{display:flex;gap:6px;margin-top:10px}
 
 /* Pending card accent */
-.req-card.pending-card{border-left:3px solid #F59E0B}
-.req-card.approved-card{border-left:3px solid #10B981}
-.req-card.rejected-card{border-left:3px solid #EF4444}
+.req-card.pending-card{border-left:3px solid #F59E0B;background:linear-gradient(to right,#FFFBEB,#fff 60px)}
+.req-card.approved-card{border-left:3px solid #10B981;background:linear-gradient(to right,#F0FDF4,#fff 60px)}
+.req-card.rejected-card{border-left:3px solid #EF4444;background:linear-gradient(to right,#FFF5F5,#fff 60px)}
 
 /* ─── Empty state ─────────────────────────────────────────────────── */
-.empty{
-  text-align:center;padding:36px 20px;
-}
-.empty-icon{font-size:36px;margin-bottom:10px;opacity:.4}
-.empty-text{font-size:13px;color:var(--text-muted)}
+.empty{text-align:center;padding:28px 20px}
+.empty-icon{font-size:30px;margin-bottom:8px;opacity:.35}
+.empty-text{font-size:12px;color:var(--text-muted);font-weight:500}
 
 /* ─── Alert toast ─────────────────────────────────────────────────── */
 .toast{
-  position:fixed;top:16px;right:16px;
-  max-width:360px;padding:12px 16px;
-  border-radius:var(--radius);font-size:13px;
-  box-shadow:var(--shadow-lg);z-index:9999;
-  display:flex;align-items:flex-start;gap:10px;
-  border:1px solid;animation:slideIn .25s ease;
+  position:fixed;top:14px;right:14px;
+  max-width:320px;padding:11px 14px;
+  border-radius:var(--radius);font-size:12px;
+  box-shadow:0 8px 24px rgba(0,0,0,.12),0 2px 8px rgba(0,0,0,.06);
+  z-index:9999;
+  display:flex;align-items:flex-start;gap:9px;
+  border:1px solid;animation:slideIn .25s cubic-bezier(.34,1.56,.64,1);
 }
-@keyframes slideIn{from{transform:translateX(20px);opacity:0}to{transform:translateX(0);opacity:1}}
-.toast-success{background:#ECFDF5;border-color:#A7F3D0;color:#065F46}
-.toast-warning{background:#FFFBEB;border-color:#FDE68A;color:#92400E}
-.toast-danger{background:#FEF2F2;border-color:#FECACA;color:#7F1D1D}
-.toast-info{background:var(--brand-light);border-color:#C7D2FE;color:var(--brand-dark)}
-.toast-icon{font-size:16px;flex-shrink:0;margin-top:1px}
-.toast-body{flex:1}
-.toast-close{cursor:pointer;opacity:.5;font-size:16px;line-height:1;margin-left:4px}
-.toast-close:hover{opacity:1}
+@keyframes slideIn{from{transform:translateX(24px) scale(.96);opacity:0}to{transform:translateX(0) scale(1);opacity:1}}
+.toast-success{background:#ECFDF5;border-color:#6EE7B7;color:#065F46}
+.toast-warning{background:#FFFBEB;border-color:#FCD34D;color:#92400E}
+.toast-danger{background:#FEF2F2;border-color:#FCA5A5;color:#7F1D1D}
+.toast-info{background:#EEF2FF;border-color:#A5B4FC;color:#3730A3}
+.toast-icon{font-size:15px;flex-shrink:0;margin-top:1px}
+.toast-body{flex:1;font-weight:500}
+.toast-close{cursor:pointer;opacity:.4;font-size:15px;line-height:1;margin-left:4px}
+.toast-close:hover{opacity:.8}
 
 /* ─── Modal ───────────────────────────────────────────────────────── */
 .modal-backdrop{
   display:none;position:fixed;inset:0;
-  background:rgba(17,24,39,.5);backdrop-filter:blur(3px);
-  z-index:200;align-items:center;justify-content:center;padding:20px;
+  background:rgba(15,23,42,.55);backdrop-filter:blur(4px);
+  z-index:200;align-items:center;justify-content:center;padding:16px;
 }
 .modal-backdrop.open{display:flex}
 .modal-box{
   background:var(--surface);border-radius:var(--radius-lg);
-  width:100%;max-width:500px;box-shadow:var(--shadow-lg);
+  width:100%;max-width:460px;
+  box-shadow:0 24px 64px rgba(0,0,0,.2),0 4px 16px rgba(0,0,0,.1);
   border:1px solid var(--border);
-  animation:modalIn .2s ease;
+  animation:modalIn .2s cubic-bezier(.34,1.56,.64,1);
 }
-@keyframes modalIn{from{transform:scale(.97);opacity:0}to{transform:scale(1);opacity:1}}
+@keyframes modalIn{from{transform:scale(.95) translateY(8px);opacity:0}to{transform:scale(1) translateY(0);opacity:1}}
 .modal-hd{
-  padding:20px 24px 16px;display:flex;align-items:center;
+  padding:15px 18px 13px;display:flex;align-items:center;
   justify-content:space-between;border-bottom:1px solid var(--border);
+  background:var(--bg);border-radius:var(--radius-lg) var(--radius-lg) 0 0;
 }
-.modal-hd-title{font-size:16px;font-weight:700;color:var(--text-primary)}
+.modal-hd-title{font-size:14px;font-weight:700;color:var(--text-primary);letter-spacing:-.01em}
 .modal-close-btn{
-  width:28px;height:28px;border-radius:6px;border:none;background:var(--bg-alt);
+  width:26px;height:26px;border-radius:6px;border:none;
+  background:var(--border);
   cursor:pointer;display:flex;align-items:center;justify-content:center;
-  font-size:14px;color:var(--text-secondary);
+  font-size:12px;color:var(--text-secondary);transition:all .15s;
 }
-.modal-close-btn:hover{background:var(--border);color:var(--text-primary)}
-.modal-body{padding:20px 24px}
+.modal-close-btn:hover{background:var(--border-strong);color:var(--text-primary)}
+.modal-body{padding:16px 18px}
 .modal-ft{
-  padding:14px 24px;border-top:1px solid var(--border);
+  padding:12px 18px;border-top:1px solid var(--border);
   display:flex;gap:8px;justify-content:flex-end;
   background:var(--bg);border-radius:0 0 var(--radius-lg) var(--radius-lg);
 }
 .detail-grid{
   background:var(--bg);border-radius:var(--radius-sm);
-  border:1px solid var(--border);overflow:hidden;margin-bottom:16px;
+  border:1px solid var(--border);overflow:hidden;margin-bottom:12px;
 }
 .detail-row{
-  display:grid;grid-template-columns:130px 1fr;
+  display:grid;grid-template-columns:120px 1fr;
   border-bottom:1px solid var(--border);
 }
 .detail-row:last-child{border-bottom:none}
 .detail-label{
-  padding:9px 12px;font-size:11px;font-weight:700;
-  color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em;
+  padding:8px 11px;font-size:10px;font-weight:700;
+  color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;
   background:var(--bg-alt);border-right:1px solid var(--border);
   display:flex;align-items:center;
 }
-.detail-value{padding:9px 14px;font-size:13px;color:var(--text-primary);display:flex;align-items:center}
+.detail-value{padding:8px 12px;font-size:12px;color:var(--text-primary);display:flex;align-items:center;font-weight:500}
 .detail-value.accent{font-weight:700;color:var(--brand)}
 
-/* ─── Accordion (email settings) ─────────────────────────────────── */
+/* ─── Accordion ──────────────────────────────────────────────────── */
 .accordion-hd{
-  display:flex;align-items:center;gap:10px;cursor:pointer;
-  padding:14px 20px;user-select:none;
+  display:flex;align-items:center;gap:8px;cursor:pointer;
+  padding:11px 15px;user-select:none;
 }
 .accordion-hd:hover .accordion-toggle{color:var(--text-primary)}
 .accordion-toggle{font-size:11px;color:var(--text-muted);margin-left:auto;transition:transform .2s}
 .accordion-toggle.open{transform:rotate(180deg)}
-.accordion-body{padding:0 20px 20px;display:none}
+.accordion-body{padding:0 15px 15px;display:none}
 .accordion-body.open{display:block}
 .cfg-badge{
   display:inline-flex;align-items:center;gap:4px;
@@ -480,16 +566,16 @@ tbody tr:hover td{background:var(--bg)}
 
 /* ─── File upload ─────────────────────────────────────────────────── */
 .upload-label{
-  display:flex;flex-direction:column;align-items:center;gap:8px;
+  display:flex;flex-direction:column;align-items:center;gap:6px;
   border:2px dashed var(--border-strong);border-radius:var(--radius);
-  padding:20px 16px;cursor:pointer;transition:border-color .15s,background .15s;
-  text-align:center;font-size:13px;color:var(--text-secondary);
+  padding:16px 12px;cursor:pointer;transition:all .2s;
+  text-align:center;font-size:12px;color:var(--text-secondary);
 }
 .upload-label:hover{border-color:var(--brand);background:var(--brand-light);color:var(--brand)}
 .upload-label.uploading{border-color:var(--brand);background:var(--brand-light);opacity:.7;pointer-events:none}
-.upload-label.success{border-color:var(--success);background:var(--success-bg)}
+.upload-label.success{border-color:var(--success);background:var(--success-bg);color:var(--success)}
 .upload-label.error{border-color:var(--danger);background:var(--danger-bg)}
-.upload-icon{font-size:24px}
+.upload-icon{font-size:22px}
 
 /* ─── Page tabs ───────────────────────────────────────────────────── */
 .page-section{display:none}
@@ -498,8 +584,8 @@ tbody tr:hover td{background:var(--bg)}
 /* ─── Spinner ─────────────────────────────────────────────────────── */
 .spin{
   display:inline-block;width:13px;height:13px;
-  border:2px solid rgba(255,255,255,.4);border-radius:50%;
-  border-top-color:#fff;animation:spin .6s linear infinite;
+  border:2px solid rgba(255,255,255,.35);border-radius:50%;
+  border-top-color:#fff;animation:spin .65s linear infinite;
 }
 .spin-dark{border-color:rgba(79,70,229,.2);border-top-color:var(--brand)}
 @keyframes spin{to{transform:rotate(360deg)}}
@@ -508,10 +594,89 @@ tbody tr:hover td{background:var(--bg)}
 .today-row td{background:#EEF2FF!important;font-weight:600}
 .today-row td:first-child{border-left:3px solid var(--brand)}
 
+/* ─── Ultra-compact table (all schedules) ────────────────────────── */
+.tbl-dense th{padding:5px 7px;font-size:9.5px;letter-spacing:.04em}
+.tbl-dense td{padding:5px 7px;font-size:11px}
+.tbl-dense .store-pill{padding:1px 7px;border-radius:3px;font-size:10.5px;font-weight:600}
+.tbl-dense .adh-val{font-size:10.5px;font-weight:700}
+
+/* ─── Multi-select dropdown ──────────────────────────────────────── */
+.ms-wrap{position:relative;display:inline-block;min-width:140px}
+.ms-trigger{
+  display:flex;align-items:center;justify-content:space-between;gap:6px;
+  padding:5px 10px;border:1.5px solid var(--border-strong);border-radius:var(--radius-sm);
+  font-size:12px;font-family:inherit;color:var(--text-primary);background:var(--surface);
+  cursor:pointer;user-select:none;white-space:nowrap;min-width:130px;
+}
+.ms-trigger:hover{border-color:var(--brand)}
+.ms-trigger.open{border-color:var(--brand);box-shadow:0 0 0 3px rgba(79,70,229,.1)}
+.ms-arrow{font-size:9px;color:var(--text-muted);transition:transform .15s;flex-shrink:0}
+.ms-trigger.open .ms-arrow{transform:rotate(180deg)}
+.ms-dropdown{
+  position:absolute;top:calc(100% + 4px);left:0;min-width:100%;
+  background:var(--surface);border:1.5px solid var(--border-strong);
+  border-radius:var(--radius-sm);box-shadow:var(--shadow-lg);
+  z-index:500;display:none;max-height:240px;overflow-y:auto;
+}
+.ms-dropdown.open{display:block}
+.ms-search{
+  padding:6px 8px;border-bottom:1px solid var(--border);
+  position:sticky;top:0;background:var(--surface);z-index:1;
+}
+.ms-search input{
+  width:100%;padding:4px 8px;border:1px solid var(--border-strong);
+  border-radius:4px;font-size:11px;font-family:inherit;outline:none;
+}
+.ms-search input:focus{border-color:var(--brand)}
+.ms-actions{
+  display:flex;gap:4px;padding:5px 8px;border-bottom:1px solid var(--border);
+  position:sticky;top:37px;background:var(--surface);z-index:1;
+}
+.ms-act-btn{
+  font-size:10px;color:var(--brand);background:none;border:none;
+  cursor:pointer;padding:2px 4px;border-radius:3px;font-family:inherit;
+}
+.ms-act-btn:hover{background:var(--brand-light)}
+.ms-option{
+  display:flex;align-items:center;gap:7px;padding:6px 10px;
+  font-size:12px;cursor:pointer;transition:background .1s;
+}
+.ms-option:hover{background:var(--bg-alt)}
+.ms-option input[type=checkbox]{
+  width:13px;height:13px;accent-color:var(--brand);flex-shrink:0;cursor:pointer;
+}
+.ms-option.checked{background:var(--brand-light);color:var(--brand);font-weight:500}
+.ms-chip{
+  display:inline-flex;align-items:center;gap:3px;
+  background:var(--brand-light);color:var(--brand);
+  font-size:10px;font-weight:600;padding:1px 5px;border-radius:3px;
+}
+
+/* ─── Page header banner (section titles) ─────────────────────────── */
+.page-banner{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:16px;gap:12px;
+}
+.page-banner-left{display:flex;flex-direction:column;gap:2px}
+.page-banner-title{
+  font-size:15px;font-weight:800;color:var(--text-primary);letter-spacing:-.02em;
+}
+.page-banner-sub{font-size:11.5px;color:var(--text-muted)}
+
+/* ─── Topbar pill badge ───────────────────────────────────────────── */
+.topbar-month-pill{
+  display:inline-flex;align-items:center;gap:5px;
+  padding:3px 10px;border-radius:20px;
+  background:var(--brand-light);color:var(--brand);
+  font-size:10.5px;font-weight:600;letter-spacing:.01em;
+  border:1px solid #C7D2FE;
+}
+
 /* ─── Responsive ──────────────────────────────────────────────────── */
 @media(max-width:900px){
-  .sidebar{width:200px}
-  .main-content{margin-left:200px}
+  .sidebar{width:180px}
+  .sidebar.collapsed{transform:translateX(-180px)}
+  .main-content{margin-left:180px}
   .stats-grid{grid-template-columns:repeat(2,1fr)}
 }
 @media(max-width:640px){
@@ -665,46 +830,99 @@ tbody tr:hover td{background:var(--bg)}
       <header class="topbar">
         <div style="display:flex;align-items:center;gap:12px">
           <button class="btn-icon" id="sidebarToggleBtn" title="Toggle navigation" onclick="toggleSidebar()" style="font-size:18px;line-height:1">☰</button>
+          <div class="topbar-divider"></div>
           <div>
             <div class="topbar-title" id="topbarTitle">Dashboard</div>
             <div class="topbar-sub" id="topbarSub">Loading…</div>
           </div>
+          <span class="topbar-month-pill" id="topbarMonthPill">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            <span id="topbarMonthLabel">—</span>
+          </span>
         </div>
         <div class="topbar-right">
-          <button class="btn-icon" title="Refresh data from Excel" onclick="refreshData()">🔄</button>
+          <button class="btn-icon" title="Refresh data" onclick="refreshData()" style="color:var(--brand)">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+          </button>
         </div>
       </header>
 
       <div class="page-body">
 
         <!-- Stats -->
-        <div class="stats-grid">
+        <div class="stats-grid" id="statsGrid">
+          <!-- Total Decisions -->
           <div class="stat-card">
-            <div class="stat-icon total">📊</div>
-            <div class="stat-body">
-              <div class="stat-val" id="statTotal">0</div>
-              <div class="stat-lbl">Total Decisions</div>
+            <div class="stat-card-inner">
+              <div class="stat-icon-wrap c-indigo">
+                <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/>
+                  <rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/>
+                </svg>
+              </div>
+              <div class="stat-data">
+                <div class="stat-val" id="statTotal">0</div>
+                <div class="stat-lbl">Total Decisions</div>
+                <div class="stat-sub" id="statTotalSub">Approvals processed</div>
+              </div>
+            </div>
+            <div class="stat-bar-wrap">
+              <div class="stat-bar-track"><div class="stat-bar-fill" id="barTotal" style="width:100%"></div></div>
             </div>
           </div>
+          <!-- Approved -->
           <div class="stat-card">
-            <div class="stat-icon approved">✅</div>
-            <div class="stat-body">
-              <div class="stat-val" id="statApproved">0</div>
-              <div class="stat-lbl">Approved</div>
+            <div class="stat-card-inner">
+              <div class="stat-icon-wrap c-green">
+                <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M20 6L9 17l-5-5"/>
+                </svg>
+              </div>
+              <div class="stat-data">
+                <div class="stat-val" id="statApproved">0</div>
+                <div class="stat-lbl">Approved</div>
+                <div class="stat-sub" id="statApprovedSub">of total decisions</div>
+              </div>
+            </div>
+            <div class="stat-bar-wrap">
+              <div class="stat-bar-track"><div class="stat-bar-fill" id="barApproved" style="width:0%"></div></div>
             </div>
           </div>
+          <!-- Rejected -->
           <div class="stat-card">
-            <div class="stat-icon rejected">❌</div>
-            <div class="stat-body">
-              <div class="stat-val" id="statRejected">0</div>
-              <div class="stat-lbl">Rejected</div>
+            <div class="stat-card-inner">
+              <div class="stat-icon-wrap c-red">
+                <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+              </div>
+              <div class="stat-data">
+                <div class="stat-val" id="statRejected">0</div>
+                <div class="stat-lbl">Rejected</div>
+                <div class="stat-sub" id="statRejectedSub">of total decisions</div>
+              </div>
+            </div>
+            <div class="stat-bar-wrap">
+              <div class="stat-bar-track"><div class="stat-bar-fill" id="barRejected" style="width:0%"></div></div>
             </div>
           </div>
+          <!-- Pending -->
           <div class="stat-card">
-            <div class="stat-icon pending">⏳</div>
-            <div class="stat-body">
-              <div class="stat-val" id="statPending">0</div>
-              <div class="stat-lbl">Pending</div>
+            <div class="stat-card-inner">
+              <div class="stat-icon-wrap c-amber">
+                <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="10"/>
+                  <polyline points="12 6 12 12 16 14"/>
+                </svg>
+              </div>
+              <div class="stat-data">
+                <div class="stat-val" id="statPending">0</div>
+                <div class="stat-lbl">Pending</div>
+                <div class="stat-sub" id="statPendingSub">Awaiting review</div>
+              </div>
+            </div>
+            <div class="stat-bar-wrap">
+              <div class="stat-bar-track"><div class="stat-bar-fill" id="barPending" style="width:0%"></div></div>
             </div>
           </div>
         </div>
@@ -845,11 +1063,39 @@ tbody tr:hover td{background:var(--bg)}
           <div class="section-hd">
             <div>
               <div class="section-title">My Team Summary</div>
-              <div class="section-sub">Adherence summary for your assigned visitors</div>
+              <div class="section-sub">Per-visitor metrics grouped by designation</div>
             </div>
             <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-              <select id="approverSummaryYearFilter" onchange="onApproverSummaryYearChange()" style="padding:7px 12px;border:1.5px solid var(--border-strong);border-radius:var(--radius-sm);font-size:13px;font-family:inherit;color:var(--text-primary);background:var(--surface)"></select>
-              <select id="approverSummaryMonthFilter" onchange="loadApproverSummary()" style="padding:7px 12px;border:1.5px solid var(--border-strong);border-radius:var(--radius-sm);font-size:13px;font-family:inherit;color:var(--text-primary);background:var(--surface)"></select>
+              <select id="approverSummaryYearFilter" onchange="onApproverSummaryYearChange()" style="padding:5px 8px;border:1.5px solid var(--border-strong);border-radius:var(--radius-sm);font-size:12px;font-family:inherit;color:var(--text-primary);background:var(--surface)"></select>
+              <select id="approverSummaryMonthFilter" onchange="loadApproverSummary()" style="padding:5px 8px;border:1.5px solid var(--border-strong);border-radius:var(--radius-sm);font-size:12px;font-family:inherit;color:var(--text-primary);background:var(--surface)"></select>
+              <!-- Designation multi-select -->
+              <div class="ms-wrap" id="msWrapApprDesig">
+                <div class="ms-trigger" id="msTriggerApprDesig" onclick="toggleMs('msApprDesig','msTriggerApprDesig')">
+                  <span id="msLabelApprDesig">All Designations</span><span class="ms-arrow">▼</span>
+                </div>
+                <div class="ms-dropdown" id="msApprDesig">
+                  <div class="ms-search"><input type="text" placeholder="Search…" oninput="filterMsOptions('msApprDesig',this.value)"></div>
+                  <div class="ms-actions">
+                    <button class="ms-act-btn" onclick="selectAllMs('msApprDesig','apprDesig');event.stopPropagation()">All</button>
+                    <button class="ms-act-btn" onclick="clearMs('msApprDesig','apprDesig');event.stopPropagation()">None</button>
+                  </div>
+                  <div id="msApprDesigOptions"></div>
+                </div>
+              </div>
+              <!-- Name multi-select -->
+              <div class="ms-wrap" id="msWrapApprName">
+                <div class="ms-trigger" id="msTriggerApprName" onclick="toggleMs('msApprName','msTriggerApprName')">
+                  <span id="msLabelApprName">All Names</span><span class="ms-arrow">▼</span>
+                </div>
+                <div class="ms-dropdown" id="msApprName">
+                  <div class="ms-search"><input type="text" placeholder="Search…" oninput="filterMsOptions('msApprName',this.value)"></div>
+                  <div class="ms-actions">
+                    <button class="ms-act-btn" onclick="selectAllMs('msApprName','apprName');event.stopPropagation()">All</button>
+                    <button class="ms-act-btn" onclick="clearMs('msApprName','apprName');event.stopPropagation()">None</button>
+                  </div>
+                  <div id="msApprNameOptions"></div>
+                </div>
+              </div>
               <button class="btn btn-ghost btn-sm" onclick="downloadApproverSummary()">⬇ Download Excel</button>
             </div>
           </div>
@@ -858,14 +1104,17 @@ tbody tr:hover td{background:var(--bg)}
               <table id="approverSummaryTable">
                 <thead>
                   <tr>
-                    <th>Designation</th><th>Name</th><th>Total Days</th>
-                    <th>Store Visit Days</th><th>Plan Changed</th><th>Plan Change %</th>
-                    <th>Wooqer Filled</th><th>Wooqer Adh %</th>
-                    <th>Punch Present</th><th>Attend Adh % (Orig)</th><th>Attend Adh % (Upd)</th>
+                    <th>Designation</th>
+                    <th>Name</th>
+                    <th>Total Days</th>
+                    <th>Attend Adh % (Orig)</th>
+                    <th>Attend Adh % (Upd)</th>
+                    <th>Wooqer Adh %</th>
+                    <th>Plan Change %</th>
                   </tr>
                 </thead>
                 <tbody id="approverSummaryBody">
-                  <tr><td colspan="11"><div class="empty"><div class="empty-icon">📊</div><div class="empty-text">Click My Team Summary to load</div></div></td></tr>
+                  <tr><td colspan="7"><div class="empty"><div class="empty-icon">📊</div><div class="empty-text">Click My Team Summary to load</div></div></td></tr>
                 </tbody>
               </table>
             </div>
@@ -895,8 +1144,36 @@ tbody tr:hover td{background:var(--bg)}
               <div class="section-sub">Per-visitor metrics grouped by designation</div>
             </div>
             <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-              <select id="summaryYearFilter" onchange="onSummaryYearChange()" style="padding:7px 12px;border:1.5px solid var(--border-strong);border-radius:var(--radius-sm);font-size:13px;font-family:inherit;color:var(--text-primary);background:var(--surface)"></select>
-              <select id="summaryMonthFilter" onchange="loadSummary()" style="padding:7px 12px;border:1.5px solid var(--border-strong);border-radius:var(--radius-sm);font-size:13px;font-family:inherit;color:var(--text-primary);background:var(--surface)"></select>
+              <select id="summaryYearFilter" onchange="onSummaryYearChange()" style="padding:5px 8px;border:1.5px solid var(--border-strong);border-radius:var(--radius-sm);font-size:12px;font-family:inherit;color:var(--text-primary);background:var(--surface)"></select>
+              <select id="summaryMonthFilter" onchange="loadSummary()" style="padding:5px 8px;border:1.5px solid var(--border-strong);border-radius:var(--radius-sm);font-size:12px;font-family:inherit;color:var(--text-primary);background:var(--surface)"></select>
+              <!-- Designation multi-select -->
+              <div class="ms-wrap" id="msWrapDesig">
+                <div class="ms-trigger" id="msTriggerDesig" onclick="toggleMs('msDesig','msTriggerDesig')">
+                  <span id="msLabelDesig">All Designations</span><span class="ms-arrow">▼</span>
+                </div>
+                <div class="ms-dropdown" id="msDesig">
+                  <div class="ms-search"><input type="text" placeholder="Search…" oninput="filterMsOptions('msDesig',this.value)"></div>
+                  <div class="ms-actions">
+                    <button class="ms-act-btn" onclick="selectAllMs('msDesig','desig');event.stopPropagation()">All</button>
+                    <button class="ms-act-btn" onclick="clearMs('msDesig','desig');event.stopPropagation()">None</button>
+                  </div>
+                  <div id="msDesigOptions"></div>
+                </div>
+              </div>
+              <!-- Name multi-select -->
+              <div class="ms-wrap" id="msWrapName">
+                <div class="ms-trigger" id="msTriggerName" onclick="toggleMs('msName','msTriggerName')">
+                  <span id="msLabelName">All Names</span><span class="ms-arrow">▼</span>
+                </div>
+                <div class="ms-dropdown" id="msName">
+                  <div class="ms-search"><input type="text" placeholder="Search…" oninput="filterMsOptions('msName',this.value)"></div>
+                  <div class="ms-actions">
+                    <button class="ms-act-btn" onclick="selectAllMs('msName','name');event.stopPropagation()">All</button>
+                    <button class="ms-act-btn" onclick="clearMs('msName','name');event.stopPropagation()">None</button>
+                  </div>
+                  <div id="msNameOptions"></div>
+                </div>
+              </div>
               <button class="btn btn-ghost btn-sm" onclick="downloadSummary()">⬇ Download Excel</button>
             </div>
           </div>
@@ -929,11 +1206,11 @@ tbody tr:hover td{background:var(--bg)}
               <div class="section-sub">Complete view of all team members' visit plans</div>
             </div>
             <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-              <select id="adminYearFilter" onchange="onYearChange('admin')" style="padding:7px 12px;border:1.5px solid var(--border-strong);border-radius:var(--radius-sm);font-size:13px;font-family:inherit;color:var(--text-primary);background:var(--surface)"></select>
-              <select id="adminMonthFilter" onchange="renderAdminSchedule()" style="padding:7px 12px;border:1.5px solid var(--border-strong);border-radius:var(--radius-sm);font-size:13px;font-family:inherit;color:var(--text-primary);background:var(--surface)"></select>
+              <select id="adminYearFilter" onchange="onYearChange('admin')" style="padding:5px 8px;border:1.5px solid var(--border-strong);border-radius:var(--radius-sm);font-size:12px;font-family:inherit;color:var(--text-primary);background:var(--surface)"></select>
+              <select id="adminMonthFilter" onchange="renderAdminSchedule()" style="padding:5px 8px;border:1.5px solid var(--border-strong);border-radius:var(--radius-sm);font-size:12px;font-family:inherit;color:var(--text-primary);background:var(--surface)"></select>
               <select id="adminFilter" onchange="renderAdminSchedule()"
-                style="padding:7px 12px;border:1.5px solid var(--border-strong);border-radius:var(--radius-sm);
-                       font-size:13px;font-family:inherit;color:var(--text-primary);background:var(--surface)">
+                style="padding:5px 8px;border:1.5px solid var(--border-strong);border-radius:var(--radius-sm);
+                       font-size:12px;font-family:inherit;color:var(--text-primary);background:var(--surface)">
                 <option value="">All Visitors</option>
               </select>
               <button class="btn btn-ghost btn-sm" onclick="downloadAdminSchedule()">⬇ Download Excel</button>
@@ -941,8 +1218,15 @@ tbody tr:hover td{background:var(--bg)}
           </div>
           <div class="card">
             <div class="tbl-wrap">
-              <table>
-                <thead><tr><th>Visitor</th><th>Date</th><th>Day</th><th>Store Code</th><th>Updated Store</th><th>Wooqer</th><th>Wooqer Adh%</th><th>Attend (Original)</th><th>Attend Adh% (Orig)</th><th>Attend (Updated)</th><th>Attend Adh% (Upd)</th><th>Approver</th></tr></thead>
+              <table class="tbl-dense">
+                <thead><tr>
+                  <th>Visitor</th><th>Date</th><th>Day</th>
+                  <th>Store</th><th>Updated</th>
+                  <th>Wooqer</th><th title="Wooqer Adherence %">Wqr%</th>
+                  <th>Attend (Orig)</th><th title="Attendance Adherence % Original">Att% O</th>
+                  <th>Attend (Upd)</th><th title="Attendance Adherence % Updated">Att% U</th>
+                  <th>Approver</th>
+                </tr></thead>
                 <tbody id="adminScheduleBody"><tr><td colspan="12"><div class="empty"><div class="empty-icon">👥</div><div class="empty-text">Loading…</div></div></td></tr></tbody>
               </table>
             </div>
@@ -1157,9 +1441,11 @@ function showSection(id, btn) {
     myRequests:    ['Change Request','Submit or track a visit plan change'],
     myHistory:     ['Approval History','Decisions on your change requests'],
     adminPending:  ['Pending Approvals','Review and act on submitted requests'],
+    adminSummary:  ['Team Summary','Attendance & adherence overview'],
     adminSchedules:['All Schedules','Complete team visit plan overview'],
     adminHistory:  ['Approvals History','All change request decisions'],
-    adminSettings:    ['Email Settings','Gmail SMTP configuration'],
+    adminFiles:    ['Data Files','Manage Excel data sources'],
+    adminSettings: ['Email Settings','Gmail SMTP configuration'],
     approverPending:  ['Pending Requests','Change requests waiting for your decision'],
     approverSummary:  ['My Team Summary','Adherence summary for your assigned visitors'],
     approverHistory:  ['Decision History','All requests you have approved or rejected'],
@@ -1183,6 +1469,10 @@ function showApp() {
   const initials = currentUser.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
   document.getElementById('userAva').textContent          = initials;
   document.getElementById('userNameSidebar').textContent  = currentUser.name;
+  // Month pill
+  const now = new Date();
+  const monthLabel = now.toLocaleDateString('en-IN',{month:'long',year:'numeric'});
+  const ml = document.getElementById('topbarMonthLabel'); if(ml) ml.textContent = monthLabel;
   document.getElementById('userRoleSidebar').innerHTML =
     currentUser.isAdmin
       ? 'Administrator <span class="admin-chip">ADMIN</span>'
@@ -1311,7 +1601,7 @@ function isStoreVisit(plan) {
 // ── Adherence score cell ──────────────────────────────────────────────
 function adhCell(score) {
   if (score === null || score === undefined)
-    return `<span style="color:var(--text-muted);font-size:12px">N/A</span>`;
+    return `<span style="color:var(--text-muted);font-size:12px">—</span>`;
   const color = score === 100 ? 'var(--success)' : 'var(--danger)';
   const bg    = score === 100 ? 'var(--success-bg)' : 'var(--danger-bg)';
   return `<span style="font-weight:700;color:${color};background:${bg};padding:3px 10px;border-radius:4px;font-size:12px">${score}</span>`;
@@ -1337,6 +1627,8 @@ function complianceCell(w) {
 function attendanceCell(a) {
   if (!a || a.status === 'missing')
     return `<span style="color:var(--text-muted);font-size:12px">— No record</span>`;
+  if (a.status === 'na' || !a.has_update && a.store === '')
+    return `<span style="color:var(--text-muted);font-size:12px">—</span>`;
   if (a.status === 'match')
     return `<span style="font-weight:600;color:var(--success);background:var(--success-bg);padding:3px 8px;border-radius:4px;font-size:12px">✅ ${a.store}</span>`;
   if (a.status === 'diff')
@@ -1593,21 +1885,22 @@ function renderAdminSchedule() {
       const mm  = d.toLocaleDateString('en-IN',{day:'2-digit',month:'short'});
       const isT = p.date===TODAY;
       const updCell = p.updatedPlan
-        ? `<span style="font-weight:600;color:var(--success);background:var(--success-bg);padding:3px 10px;border-radius:4px;font-size:12px">${p.updatedPlan}</span>`
-        : `<span style="color:var(--text-muted);font-size:12px">—</span>`;
+        ? `<span class="store-pill" style="color:var(--success);background:var(--success-bg)">${p.updatedPlan}</span>`
+        : `<span style="color:var(--text-muted)">—</span>`;
+      const approverShort = v.approverEmail ? v.approverEmail.split('@')[0] : '—';
       rows += `<tr class="${isT?'today-row':''}">
-        <td style="font-weight:500">${name}</td>
-        <td>${mm}${isT?' <span class="badge badge-info" style="font-size:10px;padding:1px 6px">Today</span>':''}</td>
+        <td style="font-weight:500;white-space:nowrap">${name}</td>
+        <td style="white-space:nowrap">${mm}${isT?' <span style="font-size:9px;background:var(--brand-light);color:var(--brand);padding:1px 5px;border-radius:3px;font-weight:700">TODAY</span>':''}</td>
         <td style="color:var(--text-secondary)">${days[d.getDay()]}</td>
-        <td><span style="font-weight:600;color:var(--brand);background:var(--brand-light);padding:3px 10px;border-radius:4px;font-size:12px">${p.plan}</span></td>
+        <td><span class="store-pill" style="color:var(--brand);background:var(--brand-light)">${p.plan}</span></td>
         <td>${updCell}</td>
         <td>${complianceCell(p.wooqer)}</td>
-        <td>${adhCell(p.wooqer_adherence)}</td>
+        <td class="adh-val">${adhCell(p.wooqer_adherence)}</td>
         <td>${attendanceCell(p.attendance_original)}</td>
-        <td>${adhCell(p.attend_original_adherence)}</td>
+        <td class="adh-val">${adhCell(p.attend_original_adherence)}</td>
         <td>${attendanceCell(p.attendance_updated)}</td>
-        <td>${adhCell(p.attend_updated_adherence)}</td>
-        <td style="color:var(--text-muted);font-size:12px">${v.approverEmail}</td>
+        <td class="adh-val">${adhCell(p.attend_updated_adherence)}</td>
+        <td style="color:var(--text-muted);font-size:10.5px" title="${v.approverEmail}">${approverShort}</td>
       </tr>`;
     });
   });
@@ -1617,7 +1910,7 @@ function renderAdminSchedule() {
   const avgAO = avgAdherence(allPlans, 'attend_original_adherence');
   const avgAU = avgAdherence(allPlans, 'attend_updated_adherence');
   rows += `<tr style="background:var(--bg-alt);font-weight:600;border-top:2px solid var(--border-strong)">
-    <td colspan="6" style="text-align:right;color:var(--text-secondary);font-size:12px;padding-right:12px">Overall Average Adherence %</td>
+    <td colspan="6" style="text-align:right;color:var(--text-secondary);font-size:10.5px;padding-right:8px">Avg Adherence %</td>
     <td>${adhCell(avgW)}</td>
     <td></td>
     <td>${adhCell(avgAO)}</td>
@@ -1634,6 +1927,8 @@ function renderPending() {
   const nb      = document.getElementById('pendingBadgeAdmin');
   nb.textContent=pending.length; nb.className='nav-badge'+(pending.length?' show':'');
   document.getElementById('statPending').textContent = pending.length;
+  const pbEl=document.getElementById('barPending'); if(pbEl) pbEl.style.width=Math.max(2,Math.min(100,pending.length*10))+'%';
+  const psEl=document.getElementById('statPendingSub'); if(psEl) psEl.textContent=pending.length===1?'1 awaiting review':`${pending.length} awaiting review`;
 
   if (!pending.length) {
     el.innerHTML='<div class="card"><div class="card-body"><div class="empty"><div class="empty-icon">✅</div><div class="empty-text">All clear — no pending approvals</div></div></div></div>';
@@ -1750,10 +2045,30 @@ async function rejectFromModal() {
 
 // ── Stats ─────────────────────────────────────────────────────────────
 function updateStats() {
-  document.getElementById('statTotal').textContent    = approvals.length;
-  document.getElementById('statApproved').textContent = approvals.filter(a=>a.status==='Approved').length;
-  document.getElementById('statRejected').textContent = approvals.filter(a=>a.status==='Rejected').length;
-  document.getElementById('statPending').textContent  = changeRequests.filter(r=>r.status==='Pending').length;
+  const total    = approvals.length;
+  const approved = approvals.filter(a=>a.status==='Approved').length;
+  const rejected = approvals.filter(a=>a.status==='Rejected').length;
+  const pending  = changeRequests.filter(r=>r.status==='Pending').length;
+
+  document.getElementById('statTotal').textContent    = total;
+  document.getElementById('statApproved').textContent = approved;
+  document.getElementById('statRejected').textContent = rejected;
+  document.getElementById('statPending').textContent  = pending;
+
+  // sub-labels
+  const pctFn = (n,d) => d ? Math.round(n/d*100)+'%' : '0%';
+  const el = id => document.getElementById(id);
+  if(el('statTotalSub'))    el('statTotalSub').textContent    = total === 1 ? '1 approval processed' : `${total} approvals processed`;
+  if(el('statApprovedSub')) el('statApprovedSub').textContent = total ? pctFn(approved,total)+' of total' : 'of total decisions';
+  if(el('statRejectedSub')) el('statRejectedSub').textContent = total ? pctFn(rejected,total)+' of total' : 'of total decisions';
+  if(el('statPendingSub'))  el('statPendingSub').textContent  = pending === 1 ? '1 awaiting review' : `${pending} awaiting review`;
+
+  // progress bars
+  const bar = (id,pct) => { const b=el(id); if(b) b.style.width=Math.max(2,pct)+'%'; };
+  bar('barTotal',    100);
+  bar('barApproved', total ? approved/total*100 : 0);
+  bar('barRejected', total ? rejected/total*100 : 0);
+  bar('barPending',  pending ? Math.min(100, pending*10) : 0);
 }
 
 // ── Approver ──────────────────────────────────────────────────────────
@@ -1842,6 +2157,270 @@ async function approverDecide(requestId, action) {
   } catch(e) { showToast('danger', 'Error: ' + e.message); }
 }
 
+// ── Multi-select filter engine ─────────────────────────────────────────
+// msState: { [dropdownId]: Set of selected values }
+const msState = {};
+
+function initMs(dropdownId, optionsContainerId, labelId, items, onChangeFn) {
+  if (!msState[dropdownId]) msState[dropdownId] = new Set(items.map(i=>i.value));
+  const container = document.getElementById(optionsContainerId);
+  if (!container) return;
+  container.innerHTML = items.map(item => `
+    <label class="ms-option ${msState[dropdownId].has(item.value)?'checked':''}"
+           onclick="toggleMsOption('${dropdownId}','${optionsContainerId}','${labelId}',
+                    '${item.value.replace(/'/g,"\\'")}',this,${JSON.stringify(onChangeFn)})">
+      <input type="checkbox" ${msState[dropdownId].has(item.value)?'checked':''} onclick="event.stopPropagation()">
+      ${item.label}
+    </label>`).join('');
+  updateMsLabel(dropdownId, labelId, items.length);
+}
+
+function toggleMsOption(dropdownId, optionsContainerId, labelId, value, el, onChangeFnName) {
+  const cb = el.querySelector('input[type=checkbox]');
+  if (msState[dropdownId].has(value)) {
+    msState[dropdownId].delete(value);
+    el.classList.remove('checked');
+    cb.checked = false;
+  } else {
+    msState[dropdownId].add(value);
+    el.classList.add('checked');
+    cb.checked = true;
+  }
+  // total items = count visible options
+  const total = document.getElementById(optionsContainerId).querySelectorAll('.ms-option').length;
+  updateMsLabel(dropdownId, labelId, total);
+  window[onChangeFnName]();
+}
+
+function updateMsLabel(dropdownId, labelId, total) {
+  const sel   = msState[dropdownId] ? msState[dropdownId].size : 0;
+  const label = document.getElementById(labelId);
+  if (!label) return;
+  if (sel === 0) label.textContent = 'None selected';
+  else if (sel === total) label.textContent = label.dataset.all || 'All';
+  else label.textContent = sel + ' selected';
+}
+
+function toggleMs(dropdownId, triggerId) {
+  const dd  = document.getElementById(dropdownId);
+  const tr  = document.getElementById(triggerId);
+  const isOpen = dd.classList.contains('open');
+  // close all others
+  document.querySelectorAll('.ms-dropdown.open').forEach(d => {
+    d.classList.remove('open');
+    const tid = d.id.replace('ms','msTrigger');
+    const t = document.getElementById(tid);
+    if (t) t.classList.remove('open');
+  });
+  if (!isOpen) { dd.classList.add('open'); tr.classList.add('open'); }
+}
+
+function filterMsOptions(dropdownId, query) {
+  const dd = document.getElementById(dropdownId);
+  dd.querySelectorAll('.ms-option').forEach(el => {
+    el.style.display = el.textContent.trim().toLowerCase().includes(query.toLowerCase()) ? '' : 'none';
+  });
+}
+
+function selectAllMs(dropdownId, onChangeFnSuffix) {
+  const dd = document.getElementById(dropdownId);
+  dd.querySelectorAll('.ms-option').forEach(el => {
+    const cb = el.querySelector('input[type=checkbox]');
+    const val = cb ? cb.closest('.ms-option').getAttribute('data-val') : null;
+    el.classList.add('checked'); if(cb) cb.checked = true;
+  });
+  // re-read values from checkboxes
+  rebuildMsState(dropdownId);
+  triggerMsChange(onChangeFnSuffix);
+}
+
+function clearMs(dropdownId, onChangeFnSuffix) {
+  const dd = document.getElementById(dropdownId);
+  dd.querySelectorAll('.ms-option').forEach(el => {
+    const cb = el.querySelector('input[type=checkbox]');
+    el.classList.remove('checked'); if(cb) cb.checked = false;
+  });
+  msState[dropdownId] = new Set();
+  triggerMsChange(onChangeFnSuffix);
+}
+
+function rebuildMsState(dropdownId) {
+  const dd = document.getElementById(dropdownId);
+  if (!dd) return;
+  msState[dropdownId] = new Set();
+  dd.querySelectorAll('.ms-option input[type=checkbox]:checked').forEach(cb => {
+    // value encoded in parent onclick attr — simpler: store as data attr
+  });
+}
+
+function triggerMsChange(suffix) {
+  if (suffix === 'desig' || suffix === 'name') onSummaryMsChange();
+  if (suffix === 'apprDesig' || suffix === 'apprName') onApproverSummaryMsChange();
+}
+
+function getMsSelected(dropdownId) {
+  return msState[dropdownId] ? [...msState[dropdownId]] : [];
+}
+
+// Close dropdowns when clicking outside
+document.addEventListener('click', e => {
+  if (!e.target.closest('.ms-wrap')) {
+    document.querySelectorAll('.ms-dropdown.open').forEach(d => d.classList.remove('open'));
+    document.querySelectorAll('.ms-trigger.open').forEach(t => t.classList.remove('open'));
+  }
+});
+
+// ── Populate multi-selects from summary data ───────────────────────────
+function populateSummaryMs(data, prefix) {
+  const isApprover = prefix === 'appr';
+  const desigDropId  = isApprover ? 'msApprDesig' : 'msDesig';
+  const nameDropId   = isApprover ? 'msApprName'  : 'msName';
+  const desigOptId   = isApprover ? 'msApprDesigOptions' : 'msDesigOptions';
+  const nameOptId    = isApprover ? 'msApprNameOptions'  : 'msNameOptions';
+  const desigLblId   = isApprover ? 'msLabelApprDesig'  : 'msLabelDesig';
+  const nameLblId    = isApprover ? 'msLabelApprName'   : 'msLabelName';
+  const onChangeFn   = isApprover ? 'onApproverSummaryMsChange' : 'onSummaryMsChange';
+
+  const desigs = [...new Set(data.map(r => r.designation))].sort();
+  const names  = [...new Set(data.map(r => r.name))].sort();
+
+  // Always reset to all-selected when new data loads
+  msState[desigDropId] = new Set(desigs);
+  msState[nameDropId]  = new Set(names);
+
+  // Set label placeholders
+  const dl = document.getElementById(desigLblId);
+  const nl = document.getElementById(nameLblId);
+  if (dl) dl.dataset.all = 'All Designations';
+  if (nl) nl.dataset.all = 'All Names';
+
+  // Render options
+  const desigContainer = document.getElementById(desigOptId);
+  const nameContainer  = document.getElementById(nameOptId);
+
+  if (desigContainer) {
+    desigContainer.innerHTML = desigs.map(d => `
+      <label class="ms-option checked"
+        onclick="msTick('${desigDropId}','${desigLblId}',${JSON.stringify(desigs.length)},
+                 '${d.replace(/'/g,"\\'")}',this,'${onChangeFn}');event.stopPropagation()">
+        <input type="checkbox" checked onclick="event.stopPropagation()">
+        ${d}
+      </label>`).join('');
+  }
+  if (nameContainer) {
+    nameContainer.innerHTML = names.map(n => `
+      <label class="ms-option checked"
+        onclick="msTick('${nameDropId}','${nameLblId}',${JSON.stringify(names.length)},
+                 '${n.replace(/'/g,"\\'")}',this,'${onChangeFn}');event.stopPropagation()">
+        <input type="checkbox" checked onclick="event.stopPropagation()">
+        ${n}
+      </label>`).join('');
+  }
+
+  updateMsLabel(desigDropId, desigLblId, desigs.length);
+  updateMsLabel(nameDropId, nameLblId, names.length);
+}
+
+// Single tick handler (simpler, more reliable)
+function msTick(dropdownId, labelId, total, value, el, onChangeFn) {
+  const cb = el.querySelector('input[type=checkbox]');
+  if (msState[dropdownId].has(value)) {
+    msState[dropdownId].delete(value);
+    el.classList.remove('checked');
+    if (cb) cb.checked = false;
+  } else {
+    msState[dropdownId].add(value);
+    el.classList.add('checked');
+    if (cb) cb.checked = true;
+  }
+  updateMsLabel(dropdownId, labelId, total);
+  window[onChangeFn]();
+}
+
+function selectAllMs(dropdownId, suffix) {
+  const container = document.getElementById(dropdownId);
+  if (!container) return;
+  container.querySelectorAll('.ms-option').forEach(el => {
+    el.classList.add('checked');
+    const cb = el.querySelector('input[type=checkbox]');
+    if (cb) { cb.checked = true; }
+    // extract value from onclick attr
+  });
+  // Re-read all text as values (reliable: store value in data attr)
+  msState[dropdownId] = new Set(
+    [...container.querySelectorAll('.ms-option')].map(el => {
+      const cb = el.querySelector('input'); return cb ? getValueFromEl(el) : null;
+    }).filter(Boolean)
+  );
+  // update label
+  const labelId = dropdownId.replace('ms','msLabel').replace('Desig','Desig').replace('Name','Name');
+  const lbl = container.closest('.ms-dropdown').previousElementSibling.querySelector('span');
+  if (lbl) { lbl.textContent = lbl.dataset.all || 'All'; }
+  triggerMsChange(suffix);
+}
+
+function clearMs(dropdownId, suffix) {
+  const container = document.getElementById(dropdownId);
+  if (!container) return;
+  container.querySelectorAll('.ms-option').forEach(el => {
+    el.classList.remove('checked');
+    const cb = el.querySelector('input[type=checkbox]'); if(cb) cb.checked = false;
+  });
+  msState[dropdownId] = new Set();
+  const lbl = container.closest('.ms-dropdown').previousElementSibling.querySelector('span');
+  if (lbl) lbl.textContent = 'None selected';
+  triggerMsChange(suffix);
+}
+
+function selectAllMs(dropdownId, suffix) {
+  const container = document.getElementById(dropdownId + 'Options') ||
+                    document.querySelector(`#${dropdownId} .ms-option`)?.parentElement;
+  const dd = document.getElementById(dropdownId);
+  if (!dd) return;
+  const opts = dd.querySelectorAll('.ms-option');
+  const vals = new Set();
+  opts.forEach(el => {
+    el.classList.add('checked');
+    const cb = el.querySelector('input[type=checkbox]'); if(cb) cb.checked = true;
+    // parse value from onclick
+    const m = (el.getAttribute('onclick')||'').match(/msTick\([^,]+,[^,]+,[^,]+,'((?:[^'\\]|\\.)*)'/);
+    if (m) vals.add(m[1].replace(/\\'/g,"'"));
+  });
+  msState[dropdownId] = vals;
+  const lbl = dd.previousElementSibling.querySelector('span');
+  if (lbl) lbl.textContent = lbl.dataset.all || 'All';
+  triggerMsChange(suffix);
+}
+
+function clearMs(dropdownId, suffix) {
+  const dd = document.getElementById(dropdownId);
+  if (!dd) return;
+  dd.querySelectorAll('.ms-option').forEach(el => {
+    el.classList.remove('checked');
+    const cb = el.querySelector('input[type=checkbox]'); if(cb) cb.checked = false;
+  });
+  msState[dropdownId] = new Set();
+  const lbl = dd.previousElementSibling.querySelector('span');
+  if (lbl) lbl.textContent = 'None selected';
+  triggerMsChange(suffix);
+}
+
+function filterMsOptions(dropdownId, query) {
+  const dd = document.getElementById(dropdownId);
+  if (!dd) return;
+  dd.querySelectorAll('.ms-option').forEach(el => {
+    el.style.display = el.textContent.trim().toLowerCase().includes(query.toLowerCase()) ? '' : 'none';
+  });
+}
+
+function onSummaryMsChange() {
+  renderSummary();
+}
+
+function onApproverSummaryMsChange() {
+  renderApproverSummaryTable();
+}
+
 // ── Approver Summary ──────────────────────────────────────────────────
 let approverSummaryData = [];
 
@@ -1891,64 +2470,47 @@ async function loadApproverSummary() {
   const year  = document.getElementById('approverSummaryYearFilter').value;
   const month = document.getElementById('approverSummaryMonthFilter').value;
   const body  = document.getElementById('approverSummaryBody');
-  body.innerHTML = `<tr><td colspan="11"><div class="empty"><div class="empty-icon">⏳</div><div class="empty-text">Loading…</div></div></td></tr>`;
+  body.innerHTML = `<tr><td colspan="7"><div class="empty"><div class="empty-icon">⏳</div><div class="empty-text">Loading…</div></div></td></tr>`;
+  approverDrillOpen = {};
+  approverDrillData = {};
   try {
     const res  = await apiFetch(`/api/summary?year=${year}&month=${month}`);
     const json = await res.json();
     if (!json.success) { showToast('danger', json.error); return; }
     approverSummaryData = json.summary;
+    populateSummaryMs(approverSummaryData, 'appr');
     renderApproverSummaryTable();
   } catch(e) { showToast('danger','Failed to load summary'); }
 }
 
+const approverSummaryCollapsed = {};
+let   approverDrillOpen = {};
+let   approverDrillData = {};
+
 function renderApproverSummaryTable() {
-  const body = document.getElementById('approverSummaryBody');
-  if (!approverSummaryData.length) {
-    body.innerHTML = `<tr><td colspan="11"><div class="empty"><div class="empty-icon">📊</div><div class="empty-text">No data for selected period</div></div></td></tr>`;
-    return;
+  renderSummaryInto(approverSummaryData, 'approverSummaryBody',
+    approverSummaryCollapsed, approverDrillOpen, approverDrillData,
+    'msApprDesig', 'msApprName', 'toggleApproverDesigGroup', 'toggleApproverDrillDown');
+}
+
+function toggleApproverDesigGroup(desig) {
+  approverSummaryCollapsed[desig] = !approverSummaryCollapsed[desig];
+  renderApproverSummaryTable();
+}
+
+async function toggleApproverDrillDown(name) {
+  approverDrillOpen[name] = !approverDrillOpen[name];
+  if (approverDrillOpen[name] && !approverDrillData[name]) {
+    const year  = document.getElementById('approverSummaryYearFilter').value;
+    const month = document.getElementById('approverSummaryMonthFilter').value;
+    try {
+      const res  = await apiFetch(`/api/summary/detail?name=${encodeURIComponent(name)}&year=${year}&month=${month}`);
+      const json = await res.json();
+      if (json.success) approverDrillData[name] = json.detail;
+      else { showToast('danger', json.error); approverDrillOpen[name] = false; return; }
+    } catch(e) { showToast('danger','Failed to load detail'); approverDrillOpen[name] = false; return; }
   }
-  // Reuse same render logic as admin summary
-  const tempData = summaryData;
-  summaryData = approverSummaryData;
-  // Temporarily swap body target
-  const realBody = document.getElementById('summaryBody');
-  // render directly
-  let html = '';
-  approverSummaryData.forEach(r => {
-    html += `<tr>
-      <td style="color:var(--text-muted);font-size:12px">${r.designation}</td>
-      <td style="font-weight:500">${r.name}</td>
-      <td style="text-align:center">${numCell(r.total_days)}</td>
-      <td style="text-align:center">${numCell(r.store_days)}</td>
-      <td style="text-align:center">${numCell(r.plan_changed)}</td>
-      <td style="text-align:center">${pctCell(r.plan_change_pct)}</td>
-      <td style="text-align:center">${numCell(r.wooqer_filled)}</td>
-      <td style="text-align:center">${pctCell(r.wooqer_adh_pct)}</td>
-      <td style="text-align:center">${numCell(r.att_present)}</td>
-      <td style="text-align:center">${pctCell(r.att_adh_orig_pct)}</td>
-      <td style="text-align:center">${pctCell(r.att_adh_upd_pct)}</td>
-    </tr>`;
-  });
-  // Average footer
-  const avg = field => {
-    const vals = approverSummaryData.map(r=>r[field]).filter(v=>v!==null&&v!==undefined);
-    return vals.length ? Math.round(vals.reduce((a,b)=>a+b,0)/vals.length) : null;
-  };
-  const sum = field => approverSummaryData.reduce((a,r)=>(a+(r[field]||0)),0);
-  html += `<tr style="background:var(--brand-light);border-top:2px solid var(--brand)">
-    <td colspan="2" style="font-weight:700;color:var(--brand);text-align:right;padding-right:14px">Team Average</td>
-    <td style="text-align:center;font-weight:700">${sum('total_days')}</td>
-    <td style="text-align:center;font-weight:700">${sum('store_days')}</td>
-    <td style="text-align:center;font-weight:700">${sum('plan_changed')}</td>
-    <td style="text-align:center">${pctCell(avg('plan_change_pct'))}</td>
-    <td style="text-align:center;font-weight:700">${sum('wooqer_filled')}</td>
-    <td style="text-align:center">${pctCell(avg('wooqer_adh_pct'))}</td>
-    <td style="text-align:center;font-weight:700">${sum('att_present')}</td>
-    <td style="text-align:center">${pctCell(avg('att_adh_orig_pct'))}</td>
-    <td style="text-align:center">${pctCell(avg('att_adh_upd_pct'))}</td>
-  </tr>`;
-  body.innerHTML = html;
-  summaryData = tempData;
+  renderApproverSummaryTable();
 }
 
 function downloadApproverSummary() {
@@ -1956,17 +2518,13 @@ function downloadApproverSummary() {
   const year  = document.getElementById('approverSummaryYearFilter').value;
   const month = document.getElementById('approverSummaryMonthFilter').value;
   const rows  = approverSummaryData.map(r => ({
-    'Designation':         r.designation,
-    'Name':                r.name,
-    'Total Days':          r.total_days,
-    'Store Visit Days':    r.store_days,
-    'Plan Changed':        r.plan_changed,
-    'Plan Change %':       r.plan_change_pct !== null ? r.plan_change_pct+'%' : '—',
-    'Wooqer Filled':       r.wooqer_filled,
-    'Wooqer Adherence %':  r.wooqer_adh_pct !== null ? r.wooqer_adh_pct+'%' : '—',
-    'Punch Present':       r.att_present,
-    'Attend Adh % (Orig)': r.att_adh_orig_pct !== null ? r.att_adh_orig_pct+'%' : '—',
-    'Attend Adh % (Upd)':  r.att_adh_upd_pct !== null ? r.att_adh_upd_pct+'%' : '—',
+    'Designation':          r.designation,
+    'Name':                 r.name,
+    'Total Days':           r.total_days,
+    'Attend Adh % (Orig)':  r.att_adh_orig_pct !== null ? r.att_adh_orig_pct + '%' : '—',
+    'Attend Adh % (Upd)':   r.att_adh_upd_pct !== null ? r.att_adh_upd_pct + '%' : '—',
+    'Wooqer Adherence %':   r.wooqer_adh_pct !== null ? r.wooqer_adh_pct + '%' : '—',
+    'Plan Change %':        r.plan_change_pct !== null ? r.plan_change_pct + '%' : '—',
   }));
   const ws = XLSX.utils.json_to_sheet(rows);
   const wb = XLSX.utils.book_new();
@@ -2111,8 +2669,9 @@ async function loadSummary() {
     const json = await res.json();
     if (!json.success) { showToast('danger', json.error); return; }
     summaryData      = json.summary;
-    summaryDrillOpen = {};   // reset drill-down on filter change
+    summaryDrillOpen = {};
     summaryDrillData = {};
+    populateSummaryMs(summaryData, 'admin');
     renderSummary();
   } catch(e) { showToast('danger','Failed to load summary'); }
 }
@@ -2134,21 +2693,7 @@ const summaryCollapsed = {};
 let   summaryDrillOpen = {};   // name → true/false
 let   summaryDrillData = {};   // name → array of detail rows
 
-function summaryRow(r) {
-  const isOpen   = summaryDrillOpen[r.name] || false;
-  const drillIcon = isOpen ? '▾' : '▸';
-  return `<tr>
-    <td style="color:var(--text-muted);font-size:12px;padding-left:28px">${r.designation}</td>
-    <td style="font-weight:500;cursor:pointer;color:var(--brand)" onclick="toggleDrillDown('${r.name.replace(/'/g,"\\'")}')">
-      <span style="font-size:11px;margin-right:4px">${drillIcon}</span>${r.name}
-    </td>
-    <td style="text-align:center">${numCell(r.total_days)}</td>
-    <td style="text-align:center">${pctCell(r.att_adh_orig_pct)}</td>
-    <td style="text-align:center">${pctCell(r.att_adh_upd_pct)}</td>
-    <td style="text-align:center">${pctCell(r.wooqer_adh_pct)}</td>
-    <td style="text-align:center">${pctCell(r.plan_change_pct)}</td>
-  </tr>`;
-}
+// summaryRow removed — logic inlined into renderSummaryInto()
 
 function drillRow(d) {
   const dt  = new Date(d.date).toLocaleDateString('en-IN',{day:'2-digit',month:'short'});
@@ -2184,7 +2729,114 @@ async function toggleDrillDown(name) {
   renderSummary();
 }
 
-function subtotalRow(desig, members) {
+// subtotalRow removed — replaced by subtotalRowFrom()
+
+function toggleDesigGroup(desig) {
+  summaryCollapsed[desig] = !summaryCollapsed[desig];
+  renderSummary();
+}
+
+function renderSummary() {
+  renderSummaryInto(summaryData, 'summaryBody', summaryCollapsed, summaryDrillOpen, summaryDrillData,
+    'msDesig', 'msName', 'toggleDesigGroup', 'toggleDrillDown');
+}
+
+function renderSummaryInto(data, bodyId, collapsedState, drillOpen, drillData,
+                            desigDropId, nameDropId, toggleDesigFn, toggleDrillFn) {
+  const body = document.getElementById(bodyId);
+  if (!data.length) {
+    body.innerHTML = `<tr><td colspan="7"><div class="empty"><div class="empty-icon">📊</div><div class="empty-text">No data for selected period</div></div></td></tr>`;
+    return;
+  }
+
+  // Apply multi-select filters
+  const selDesig = msState[desigDropId];
+  const selName  = msState[nameDropId];
+  const filtered = data.filter(r =>
+    (!selDesig || selDesig.size === 0 || selDesig.has(r.designation)) &&
+    (!selName  || selName.size  === 0 || selName.has(r.name))
+  );
+
+  if (!filtered.length) {
+    body.innerHTML = `<tr><td colspan="7"><div class="empty"><div class="empty-icon">🔍</div><div class="empty-text">No results match the selected filters</div></div></td></tr>`;
+    return;
+  }
+
+  const groups = {};
+  filtered.forEach(r => {
+    if (!groups[r.designation]) groups[r.designation] = [];
+    groups[r.designation].push(r);
+  });
+
+  let html = '';
+  const DESIG_ORDER = ['REGIONAL_MANAGER','CLUSTER_MANAGER','CLUSTER_LP','CLUSTER_CVM'];
+  const orderedDesigs = [...new Set([...DESIG_ORDER, ...Object.keys(groups)])].filter(d=>groups[d]);
+
+  orderedDesigs.forEach(desig => {
+    const members   = groups[desig];
+    const collapsed = collapsedState[desig] || false;
+    const icon      = collapsed ? '＋' : '－';
+
+    html += `<tr style="background:var(--brand-light);cursor:pointer" onclick="${toggleDesigFn}('${desig}')">
+      <td colspan="7" style="font-weight:700;color:var(--brand);font-size:12px;letter-spacing:.06em;padding:9px 14px;user-select:none">
+        <span style="display:inline-block;width:20px;font-size:14px;font-weight:700">${icon}</span>
+        ${desig}
+        <span style="font-weight:400;color:var(--text-secondary);margin-left:6px">(${members.length} members)</span>
+      </td>
+    </tr>`;
+
+    if (!collapsed) {
+      members.forEach(r => {
+        const isOpen    = drillOpen[r.name] || false;
+        const drillIcon = isOpen ? '▾' : '▸';
+        html += `<tr>
+          <td style="color:var(--text-muted);font-size:12px;padding-left:28px">${r.designation}</td>
+          <td style="font-weight:500;cursor:pointer;color:var(--brand)" onclick="${toggleDrillFn}('${r.name.replace(/'/g,"\\'")}')">
+            <span style="font-size:11px;margin-right:4px">${drillIcon}</span>${r.name}
+          </td>
+          <td style="text-align:center">${numCell(r.total_days)}</td>
+          <td style="text-align:center">${pctCell(r.att_adh_orig_pct)}</td>
+          <td style="text-align:center">${pctCell(r.att_adh_upd_pct)}</td>
+          <td style="text-align:center">${pctCell(r.wooqer_adh_pct)}</td>
+          <td style="text-align:center">${pctCell(r.plan_change_pct)}</td>
+        </tr>`;
+        if (isOpen && drillData[r.name]) {
+          html += `<tr style="background:#F0F4FF">
+            <td></td>
+            <td style="padding-left:44px;font-size:11px;font-weight:700;color:var(--text-muted);letter-spacing:.04em">DATE</td>
+            <td style="font-size:11px;font-weight:700;color:var(--text-muted);letter-spacing:.04em">PLAN STORE</td>
+            <td style="font-size:11px;font-weight:700;color:var(--text-muted);text-align:center;letter-spacing:.04em">PUNCH STORE</td>
+            <td style="font-size:11px;font-weight:700;color:var(--text-muted);text-align:center;letter-spacing:.04em">ATTEND ADH%</td>
+            <td style="font-size:11px;font-weight:700;color:var(--text-muted);text-align:center;letter-spacing:.04em">WOOQER STORE</td>
+            <td style="font-size:11px;font-weight:700;color:var(--text-muted);text-align:center;letter-spacing:.04em">WOOQER ADH%</td>
+          </tr>`;
+          drillData[r.name].forEach(d => { html += drillRow(d); });
+        }
+      });
+    }
+
+    html += subtotalRowFrom(desig, members);
+  });
+
+  // Grand total over filtered data
+  const grandAvg = field => {
+    const vals = filtered.map(r=>r[field]).filter(v=>v!==null&&v!==undefined);
+    return vals.length ? Math.round(vals.reduce((a,b)=>a+b,0)/vals.length) : null;
+  };
+  const grandSum = field => filtered.reduce((a,r)=>(a+(r[field]||0)),0);
+  html += `<tr style="background:var(--brand);color:#fff;border-top:2px solid var(--brand-dark)">
+    <td colspan="2" style="font-weight:700;padding-left:14px;color:#fff">Grand Total</td>
+    <td style="text-align:center;font-weight:700;color:#fff">${grandSum('total_days')}</td>
+    <td style="text-align:center"><span style="font-weight:700;color:#fff">${grandAvg('att_adh_orig_pct')??'—'}%</span></td>
+    <td style="text-align:center"><span style="font-weight:700;color:#fff">${grandAvg('att_adh_upd_pct')??'—'}%</span></td>
+    <td style="text-align:center"><span style="font-weight:700;color:#fff">${grandAvg('wooqer_adh_pct')??'—'}%</span></td>
+    <td style="text-align:center"><span style="font-weight:700;color:#fff">${grandAvg('plan_change_pct')??'—'}%</span></td>
+  </tr>`;
+
+  body.innerHTML = html;
+}
+
+function subtotalRowFrom(desig, members) {
   const avg = field => {
     const vals = members.map(r=>r[field]).filter(v=>v!==null&&v!==undefined);
     return vals.length ? Math.round(vals.reduce((a,b)=>a+b,0)/vals.length) : null;
@@ -2198,85 +2850,6 @@ function subtotalRow(desig, members) {
     <td style="text-align:center">${pctCell(avg('wooqer_adh_pct'))}</td>
     <td style="text-align:center">${pctCell(avg('plan_change_pct'))}</td>
   </tr>`;
-}
-
-function toggleDesigGroup(desig) {
-  summaryCollapsed[desig] = !summaryCollapsed[desig];
-  renderSummary();
-}
-
-function renderSummary() {
-  const body = document.getElementById('summaryBody');
-  if (!summaryData.length) {
-    body.innerHTML = `<tr><td colspan="7"><div class="empty"><div class="empty-icon">📊</div><div class="empty-text">No data for selected period</div></div></td></tr>`;
-    return;
-  }
-
-  const groups = {};
-  summaryData.forEach(r => {
-    if (!groups[r.designation]) groups[r.designation] = [];
-    groups[r.designation].push(r);
-  });
-
-  let html = '';
-  const DESIG_ORDER = ['REGIONAL_MANAGER','CLUSTER_MANAGER','CLUSTER_LP','CLUSTER_CVM'];
-  const orderedDesigs = [...new Set([...DESIG_ORDER, ...Object.keys(groups)])].filter(d=>groups[d]);
-
-  orderedDesigs.forEach(desig => {
-    const members   = groups[desig];
-    const collapsed = summaryCollapsed[desig] || false;
-    const icon      = collapsed ? '＋' : '－';
-
-    // Designation group header — clickable to collapse/expand
-    html += `<tr style="background:var(--brand-light);cursor:pointer" onclick="toggleDesigGroup('${desig}')">
-      <td colspan="7" style="font-weight:700;color:var(--brand);font-size:12px;letter-spacing:.06em;padding:9px 14px;user-select:none">
-        <span style="display:inline-block;width:20px;font-size:14px;font-weight:700">${icon}</span>
-        ${desig}
-        <span style="font-weight:400;color:var(--text-secondary);margin-left:6px">(${members.length} members)</span>
-      </td>
-    </tr>`;
-
-    // Member rows — hidden when collapsed
-    if (!collapsed) {
-      members.forEach(r => {
-        html += summaryRow(r);
-        // Drill-down detail rows
-        if (summaryDrillOpen[r.name] && summaryDrillData[r.name]) {
-          // Header for detail columns
-          html += `<tr style="background:#F0F4FF">
-            <td></td>
-            <td style="padding-left:44px;font-size:11px;font-weight:700;color:var(--text-muted);letter-spacing:.04em">DATE</td>
-            <td style="font-size:11px;font-weight:700;color:var(--text-muted);letter-spacing:.04em">PLAN STORE</td>
-            <td style="font-size:11px;font-weight:700;color:var(--text-muted);text-align:center;letter-spacing:.04em">PUNCH STORE</td>
-            <td style="font-size:11px;font-weight:700;color:var(--text-muted);text-align:center;letter-spacing:.04em">ATTEND ADH%</td>
-            <td style="font-size:11px;font-weight:700;color:var(--text-muted);text-align:center;letter-spacing:.04em">WOOQER STORE</td>
-            <td style="font-size:11px;font-weight:700;color:var(--text-muted);text-align:center;letter-spacing:.04em">WOOQER ADH%</td>
-          </tr>`;
-          summaryDrillData[r.name].forEach(d => { html += drillRow(d); });
-        }
-      });
-    }
-
-    // Subtotal always visible
-    html += subtotalRow(desig, members);
-  });
-
-  // Grand total
-  const grandAvg = field => {
-    const vals = summaryData.map(r=>r[field]).filter(v=>v!==null&&v!==undefined);
-    return vals.length ? Math.round(vals.reduce((a,b)=>a+b,0)/vals.length) : null;
-  };
-  const grandSum = field => summaryData.reduce((a,r)=>(a+(r[field]||0)),0);
-  html += `<tr style="background:var(--brand);color:#fff;border-top:2px solid var(--brand-dark)">
-    <td colspan="2" style="font-weight:700;padding-left:14px;color:#fff">Grand Total</td>
-    <td style="text-align:center;font-weight:700;color:#fff">${grandSum('total_days')}</td>
-    <td style="text-align:center"><span style="font-weight:700;color:#fff">${grandAvg('att_adh_orig_pct')??'—'}%</span></td>
-    <td style="text-align:center"><span style="font-weight:700;color:#fff">${grandAvg('att_adh_upd_pct')??'—'}%</span></td>
-    <td style="text-align:center"><span style="font-weight:700;color:#fff">${grandAvg('wooqer_adh_pct')??'—'}%</span></td>
-    <td style="text-align:center"><span style="font-weight:700;color:#fff">${grandAvg('plan_change_pct')??'—'}%</span></td>
-  </tr>`;
-
-  body.innerHTML = html;
 }
 
 function downloadSummary() {
@@ -2397,7 +2970,7 @@ function toggleSidebar() {
     main.style.marginLeft = '0';
   } else {
     sidebar.classList.remove('collapsed');
-    main.style.marginLeft = '240px';
+    main.style.marginLeft = '216px';
   }
 }
 
