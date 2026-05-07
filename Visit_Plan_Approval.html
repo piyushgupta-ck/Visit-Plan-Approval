@@ -2939,7 +2939,7 @@ async function loadEmailCfg() {
     const cfg = await cfgRes.json();
     const ip  = await ipRes.json();
 
-    // Populate SMTP fields
+    // ── Populate SMTP fields ────────────────────────────────────────────
     document.getElementById('cfgGmail').value = cfg.gmail || '';
     const savedUrl = cfg.base_url || '';
     const isLocal  = !savedUrl || savedUrl.includes('localhost') || savedUrl.includes('127.0.0.1');
@@ -2947,42 +2947,36 @@ async function loadEmailCfg() {
     document.getElementById('serverIpHint').innerHTML =
       `🌐 Detected server: <strong>${ip.url}</strong>`;
 
-    // SMTP badge
+    // ── SMTP badge ──────────────────────────────────────────────────────
     const smtpBadge = document.getElementById('emailCfgBadge');
     if (cfg.configured) { smtpBadge.textContent='✅ Configured'; smtpBadge.className='cfg-badge ok'; }
     else                { smtpBadge.textContent='Not configured'; smtpBadge.className='cfg-badge no'; }
 
-    // Detect active method & update banner + Resend badge
+    // ── Banner + Resend badge — use active_method from backend ──────────
     const banner       = document.getElementById('emailMethodBanner');
     const bannerText   = document.getElementById('emailMethodText');
     const resendBadge  = document.getElementById('resendBadge');
     const resendDetail = document.getElementById('resendStatusDetail');
+    const method       = cfg.active_method || 'none';  // 'resend' | 'smtp' | 'none'
 
-    // Ask backend which method is active via a lightweight check
-    // We infer from config: if RESEND_API_KEY is set the backend will use it
-    // We detect by checking if the test endpoint reveals it (no extra call needed —
-    // just use the configured state we already have)
-    const isRailway = savedUrl.includes('railway.app') || savedUrl.includes('up.railway.app');
-    const hasSmtp   = cfg.configured;
-
-    if (isRailway && !hasSmtp) {
-      // On Railway, no SMTP — likely using Resend or nothing
-      banner.style.background = '#FEF3C7'; banner.style.borderColor='#FCD34D'; banner.style.color='#92400E';
-      bannerText.textContent = '⚠️ Railway detected — Gmail SMTP is blocked on Railway. Add RESEND_API_KEY in Railway Variables to enable email.';
-      resendBadge.textContent='Check Railway Variables'; resendBadge.className='cfg-badge no';
-      resendDetail.innerHTML = 'Set <code style="background:var(--bg-alt);padding:1px 5px;border-radius:3px">RESEND_API_KEY</code> in Railway → Variables → Redeploy to activate.';
-    } else if (isRailway && hasSmtp) {
-      banner.style.background = '#FEF3C7'; banner.style.borderColor='#FCD34D'; banner.style.color='#92400E';
-      bannerText.textContent = '⚠️ Railway detected — Gmail SMTP credentials are saved but Railway blocks SMTP ports. Add RESEND_API_KEY instead.';
-      resendBadge.textContent='Not active'; resendBadge.className='cfg-badge no';
-    } else if (hasSmtp) {
-      banner.style.background = '#ECFDF5'; banner.style.borderColor='#A7F3D0'; banner.style.color='#065F46';
-      bannerText.textContent = '✅ Active method: Gmail SMTP — emails will be sent using the saved Gmail credentials.';
-      resendBadge.textContent='Not active'; resendBadge.className='cfg-badge no';
+    if (method === 'resend') {
+      banner.style.cssText = 'display:flex;align-items:center;gap:10px;padding:11px 14px;border-radius:var(--radius);margin-bottom:14px;font-size:12.5px;background:#ECFDF5;border:1px solid #A7F3D0;color:#065F46';
+      bannerText.innerHTML = '✅ <strong>Active method: Resend API</strong> — emails are being sent via Resend. No action needed.';
+      resendBadge.textContent = '✅ Active'; resendBadge.className = 'cfg-badge ok';
+      if (resendDetail) resendDetail.innerHTML =
+        cfg.resend_from
+          ? `Sending from: <strong>${cfg.resend_from}</strong>`
+          : 'Sending from: <strong>onboarding@resend.dev</strong> (default). Add <code style="background:var(--bg-alt);padding:1px 5px;border-radius:3px">RESEND_FROM</code> to Railway Variables to use your own domain.';
+    } else if (method === 'smtp') {
+      banner.style.cssText = 'display:flex;align-items:center;gap:10px;padding:11px 14px;border-radius:var(--radius);margin-bottom:14px;font-size:12.5px;background:#ECFDF5;border:1px solid #A7F3D0;color:#065F46';
+      bannerText.innerHTML = '✅ <strong>Active method: Gmail SMTP</strong> — emails will be sent using saved Gmail credentials.';
+      resendBadge.textContent = 'Not active'; resendBadge.className = 'cfg-badge no';
+      if (resendDetail) resendDetail.innerHTML = '';
     } else {
-      banner.style.background = '#FEF2F2'; banner.style.borderColor='#FECACA'; banner.style.color='#7F1D1D';
-      bannerText.textContent = '❌ No email method configured — approval emails will not be sent.';
-      resendBadge.textContent='Not active'; resendBadge.className='cfg-badge no';
+      banner.style.cssText = 'display:flex;align-items:center;gap:10px;padding:11px 14px;border-radius:var(--radius);margin-bottom:14px;font-size:12.5px;background:#FEF2F2;border:1px solid #FECACA;color:#7F1D1D';
+      bannerText.innerHTML = '❌ <strong>No email method configured</strong> — approval emails will not be sent. Add <code style="background:#FEE2E2;padding:1px 5px;border-radius:3px">RESEND_API_KEY</code> in Railway Variables.';
+      resendBadge.textContent = 'Not active'; resendBadge.className = 'cfg-badge no';
+      if (resendDetail) resendDetail.innerHTML = 'Set <code style="background:var(--bg-alt);padding:1px 5px;border-radius:3px">RESEND_API_KEY</code> in Railway → Variables → Redeploy.';
     }
   } catch(e) {}
 }
