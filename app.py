@@ -1043,12 +1043,25 @@ def action_reject(request_id):
 @app.route('/api/email-config', methods=['GET'])
 @admin_required
 def get_email_config():
-    cfg = load_email_config()
+    cfg        = load_email_config()
+    resend_key = os.environ.get('RESEND_API_KEY', '').strip()
+    resend_from = os.environ.get('RESEND_FROM', 'onboarding@resend.dev')
+    has_smtp   = bool(cfg.get('gmail') and cfg.get('app_password'))
+    # Active method: Resend takes priority if key is set
+    if resend_key:
+        active_method = 'resend'
+    elif has_smtp:
+        active_method = 'smtp'
+    else:
+        active_method = 'none'
     return jsonify({
-        'success':    True,
-        'gmail':      cfg.get('gmail', ''),
-        'configured': bool(cfg.get('gmail') and cfg.get('app_password')),
-        'base_url':   cfg.get('base_url', 'http://localhost:5000')
+        'success':       True,
+        'gmail':         cfg.get('gmail', ''),
+        'configured':    has_smtp,
+        'base_url':      cfg.get('base_url', 'http://localhost:5000'),
+        'active_method': active_method,          # 'resend' | 'smtp' | 'none'
+        'resend_active': bool(resend_key),
+        'resend_from':   resend_from if resend_key else '',
     })
 
 
