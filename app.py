@@ -324,16 +324,19 @@ def _is_store_visit(plan_str):
     return plan_str.strip().lower() not in NON_STORE_PLANS
 
 
-def _propagate_wooqer_consecutive(visitors, wooqer_lk):
+def _propagate_wooqer_consecutive(visitors, wooqer_lk, attend_lk=None):
     """For each visitor, if they are planned for the same store on consecutive
     days and Wooqer is filled for ANY one of those days, copy that store code
-    to all other days in the run that are still missing — provided the
-    attendance store also matches (or attendance is missing) for that day.
+    to all other days in the run that are still missing — but ONLY for days
+    where attendance (punch-in) is present.
 
     Works on the wooqer_lk dict in-place (adds virtual keys so the rest of
     enrich_plans_with_compliance picks them up normally).
     """
     from datetime import date as _date, timedelta as _td
+
+    if attend_lk is None:
+        attend_lk = read_attendance_lookup()
 
     for v in visitors.values():
         name_lower = v['name'].strip().lower()
@@ -371,10 +374,10 @@ def _propagate_wooqer_consecutive(visitors, wooqer_lk):
                         break
 
                 if filled_store:
-                    # Propagate to every day in the run that has no Wooqer entry
+                    # Propagate only to days that have attendance but no Wooqer entry
                     for p in run:
                         key = (name_lower, p['date'])
-                        if key not in wooqer_lk:
+                        if key not in wooqer_lk and attend_lk.get(key, {}).get('store'):
                             wooqer_lk[key] = filled_store
 
             i = j if j > i + 1 else i + 1
@@ -389,8 +392,8 @@ def enrich_plans_with_compliance(visitors):
      None  → N/A (Leave / Travelling / Off etc.)
     """
     wooqer_lk = read_wooqer_lookup()
-    _propagate_wooqer_consecutive(visitors, wooqer_lk)   # ← auto-fill consecutive same-store days
     attend_lk  = read_attendance_lookup()
+    _propagate_wooqer_consecutive(visitors, wooqer_lk, attend_lk)   # ← auto-fill consecutive same-store days (attendance required)
     for v in visitors.values():
         name_lower = v['name'].strip().lower()
         for p in v['plans']:
@@ -796,8 +799,8 @@ def get_summary():
 
         visitors_raw = read_visitors_from_excel()
         wooqer_lk    = read_wooqer_lookup()
-        _propagate_wooqer_consecutive(visitors_raw, wooqer_lk)
         attend_lk    = read_attendance_lookup()
+        _propagate_wooqer_consecutive(visitors_raw, wooqer_lk, attend_lk)
 
         # Filter to only visitors assigned to this approver
         if approver_email:
@@ -933,8 +936,8 @@ def get_summary_detail():
             return jsonify({'success': False, 'error': 'Not authorised'}), 403
 
         wooqer_lk = read_wooqer_lookup()
-        _propagate_wooqer_consecutive({visitor_name: v}, wooqer_lk)
         attend_lk  = read_attendance_lookup()
+        _propagate_wooqer_consecutive({visitor_name: v}, wooqer_lk, attend_lk)
 
         today     = date.today()
         yesterday = today - timedelta(days=1)
