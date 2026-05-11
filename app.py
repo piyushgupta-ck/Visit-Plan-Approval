@@ -11,13 +11,9 @@ from functools import wraps
 
 from werkzeug.middleware.proxy_fix import ProxyFix
 
-# Optional: requests library for Resend API (added to requirements.txt)
-try:
-    import requests as _http_requests
-    _REQUESTS_AVAILABLE = True
-except ImportError:
-    _http_requests = None
-    _REQUESTS_AVAILABLE = False
+# urllib is part of Python's standard library — always available, no pip needed
+import urllib.request
+import urllib.error
 
 app = Flask(__name__, static_folder='.')
 
@@ -328,6 +324,62 @@ def _is_store_visit(plan_str):
     return plan_str.strip().lower() not in NON_STORE_PLANS
 
 
+def _propagate_wooqer_consecutive(visitors, wooqer_lk):
+    """For each visitor, if they are planned for the same store on consecutive
+    days and Wooqer is filled for ANY one of those days, copy that store code
+    to all other days in the run that are still missing — provided the
+    attendance store also matches (or attendance is missing) for that day.
+
+    Works on the wooqer_lk dict in-place (adds virtual keys so the rest of
+    enrich_plans_with_compliance picks them up normally).
+    """
+    from datetime import date as _date, timedelta as _td
+
+    for v in visitors.values():
+        name_lower = v['name'].strip().lower()
+        plans = [p for p in v['plans'] if _is_store_visit(p['plan'])]
+        if len(plans) < 2:
+            continue
+
+        # Sort by date (already sorted, but be safe)
+        plans_sorted = sorted(plans, key=lambda p: p['date'])
+
+        i = 0
+        while i < len(plans_sorted):
+            # Build a consecutive run of same effective-store days
+            run = [plans_sorted[i]]
+            effective_store = (plans_sorted[i].get('updatedPlan') or plans_sorted[i]['plan']).strip().upper()
+            j = i + 1
+            while j < len(plans_sorted):
+                prev_d = _date.fromisoformat(plans_sorted[j-1]['date'])
+                curr_d = _date.fromisoformat(plans_sorted[j]['date'])
+                curr_eff = (plans_sorted[j].get('updatedPlan') or plans_sorted[j]['plan']).strip().upper()
+                if curr_d == prev_d + _td(days=1) and curr_eff == effective_store:
+                    run.append(plans_sorted[j])
+                    j += 1
+                else:
+                    break
+
+            if len(run) >= 2:
+                # Find a filled Wooqer entry for this run
+                filled_store = None
+                for p in run:
+                    key = (name_lower, p['date'])
+                    w = wooqer_lk.get(key)
+                    if w and w == effective_store:
+                        filled_store = w
+                        break
+
+                if filled_store:
+                    # Propagate to every day in the run that has no Wooqer entry
+                    for p in run:
+                        key = (name_lower, p['date'])
+                        if key not in wooqer_lk:
+                            wooqer_lk[key] = filled_store
+
+            i = j if j > i + 1 else i + 1
+
+
 def enrich_plans_with_compliance(visitors):
     """Add wooqer / attendance fields + adherence scores to every plan entry.
 
@@ -337,6 +389,7 @@ def enrich_plans_with_compliance(visitors):
      None  → N/A (Leave / Travelling / Off etc.)
     """
     wooqer_lk = read_wooqer_lookup()
+    _propagate_wooqer_consecutive(visitors, wooqer_lk)   # ← auto-fill consecutive same-store days
     attend_lk  = read_attendance_lookup()
     for v in visitors.values():
         name_lower = v['name'].strip().lower()
@@ -743,6 +796,7 @@ def get_summary():
 
         visitors_raw = read_visitors_from_excel()
         wooqer_lk    = read_wooqer_lookup()
+        _propagate_wooqer_consecutive(visitors_raw, wooqer_lk)
         attend_lk    = read_attendance_lookup()
 
         # Filter to only visitors assigned to this approver
@@ -879,6 +933,7 @@ def get_summary_detail():
             return jsonify({'success': False, 'error': 'Not authorised'}), 403
 
         wooqer_lk = read_wooqer_lookup()
+        _propagate_wooqer_consecutive({visitor_name: v}, wooqer_lk)
         attend_lk  = read_attendance_lookup()
 
         today     = date.today()
@@ -1225,45 +1280,46 @@ def _build_email_html(change_req, approve_url, reject_url):
 
 
 def _send_via_resend(to_email, reply_to_email, subject, html_body):
-    """Send using the Resend API (https://resend.com).
-    Requires RESEND_API_KEY env var. Free plan: 3,000 emails/month.
-    Works on Railway — no SMTP port restrictions."""
-    if not _REQUESTS_AVAILABLE:
-        return False, 'requests library not installed — run: pip install requests'
-
+    """Send using the Resend API via Python's built-in urllib (no pip deps).
+    Requires RESEND_API_KEY env var. Free plan: 3,000 emails/month."""
     api_key = os.environ.get('RESEND_API_KEY', '').strip()
     if not api_key:
         return False, 'RESEND_API_KEY env var not set'
 
-    # Sender address — needs a verified domain in Resend, or use onboarding@resend.dev (test only)
     from_addr = os.environ.get('RESEND_FROM', 'Visit Plan System <onboarding@resend.dev>').strip()
 
     payload = {
-        'from':     from_addr,
-        'to':       [to_email],
-        'subject':  subject,
-        'html':     html_body,
+        'from':    from_addr,
+        'to':      [to_email],
+        'subject': subject,
+        'html':    html_body,
     }
-    # Only add reply_to if it looks like a real email
     if reply_to_email and '@' in reply_to_email:
         payload['reply_to'] = reply_to_email
 
     try:
-        resp = _http_requests.post(
+        body_bytes = json.dumps(payload).encode('utf-8')
+        req = urllib.request.Request(
             'https://api.resend.com/emails',
+            data=body_bytes,
             headers={
-                'Authorization':  f'Bearer {api_key}',
-                'Content-Type':   'application/json',
+                'Authorization': f'Bearer {api_key}',
+                'Content-Type':  'application/json',
             },
-            json=payload,
-            timeout=20,
+            method='POST',
         )
-        data = resp.json() if resp.content else {}
-        if resp.status_code in (200, 201):
+        with urllib.request.urlopen(req, timeout=20) as resp:
+            resp_body = resp.read().decode('utf-8')
+            data = json.loads(resp_body) if resp_body else {}
             return True, f'Email sent via Resend (id={data.get("id", "—")})'
-        # Surface the actual Resend error message
-        err = data.get('message') or data.get('error') or resp.text
-        return False, f'Resend error {resp.status_code}: {err}'
+    except urllib.error.HTTPError as e:
+        err_body = e.read().decode('utf-8') if e else ''
+        try:
+            err_data = json.loads(err_body)
+            err_msg  = err_data.get('message') or err_data.get('error') or err_body
+        except Exception:
+            err_msg = err_body or str(e)
+        return False, f'Resend error {e.code}: {err_msg}'
     except Exception as e:
         return False, f'Resend request failed: {e}'
 
